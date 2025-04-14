@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock%}</title>
-    <link rel="stylesheet" href="CSS/style.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/homepage.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/book-details.css') }}">
+
+<!--    <link rel="stylesheet" href="static/item.css">-->
 </head>
 <body>
     {% include 'layouts/header.html' %}

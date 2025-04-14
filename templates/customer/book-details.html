@@ -1,0 +1,20 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<section class="book-detail">
+  <div class="book-img">
+    <img src="/static/images/{{ book.image }}" alt="{{ book.title }}">
+  </div>
+  <div class="book-info">
+    <h2>{{ book.title }}</h2>
+    <p><strong>Thể loại:</strong> {{ book.genre }}</p>
+    <p><strong>Giá:</strong> {{ book.price }}</p>
+    {% if book.description %}
+      <p><strong>Mô tả:</strong> {{ book.description }}</p>
+    {% endif %}
+    <a href="/sell" class="buy-btn">🛒 Đặt mua ngay</a>
+  </div>
+</section>
+{% endblock %}

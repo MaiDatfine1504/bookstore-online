@@ -1,6 +1,84 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Trang con{% endblock %}
+{% block title %}BookStore{% endblock %}
 {% block content %}
-  <p>Nội dung ở đây</p>
+
+<!-- Banner -->
+<section class="banner">
+  <div class="banner-text">
+    <h1>Chào mừng đến với BookStore</h1>
+    <p>Khám phá ngàn đầu sách chất lượng, giá tốt, giao hàng tận nơi!</p>
+    <a href="/sell" class="cta-btn">Mua sách ngay</a>
+  </div>
+</section>
+
+<div class="page-content">
+
+<!-- Sách mới/nổi bật -->
+<section class="section">
+  <h2>Sách nổi bật</h2>
+  {% if featured_books %}
+    <div class="grid">
+      {% for book in featured_books %}
+        <div class="card book-card">
+          <img src="{{ url_for('static', filename='images/' ~ book.image) }}" alt="{{ book.title }}">
+          <div class="book-info">
+            <h3>{{ book.title }}</h3>
+          </div>
+          <div class="book-bottom">
+            <p class="price"><strong>{{ book.price }}</strong></p>
+            <a href="/book/{{ book.id }}" class="buy-cta">Mua ngay</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Chưa có sách nổi bật nào.</p>
+  {% endif %}
+</section>
+
+<!-- Danh sách sách mới -->
+<section class="section">
+  <h2>Sách mới nhất</h2>
+  {% if books %}
+    <div class="grid featured-grid">
+      {% for book in books %}
+        <div class="card book-card">
+          <img src="{{ url_for('static', filename='images/' + book.image) }}" alt="{{ book.title }}">
+          <div class="book-info">
+            <h3>{{ book.title }}</h3>
+          </div>
+          <div class="book-bottom">
+            <p class="price"><strong>{{ book.price }}</strong></p>
+            <a href="/book/{{ book.id }}" class="buy-cta">Mua ngay</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Chưa có sách nào được cập nhật</p>
+  {% endif %}
+</section>
+
+<!--  Pagination-->
+  <div class="pagination">
+    {% for p in pages %}
+        {% if p == '...' %}
+            <span class="dots">...</span>
+        {% elif p == current_page %}
+            <span class="current">{{ p }}</span>
+        {% else %}
+            <a href="{{ url_for('homepage', page=p) }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
+</div>
+
+  <!-- Gọi hành động -->
+<section class="cta-section">
+  <h2>Tham gia cộng đồng đọc sách ngay hôm nay!</h2>
+  <a href="/register" class="cta-button">Đăng ký ngay</a>
+</section>
+
+
+</div>
 {% endblock %}
