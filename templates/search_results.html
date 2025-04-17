@@ -1,0 +1,33 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Kết quả tìm kiếm{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <!-- Search Title -->
+    <h2>Kết quả tìm kiếm cho: "{{ query }}"</h2>
+
+    {% if books %}
+        <div class="search-results-grid">
+            {% for book in books %}
+            <a href="/book/{{ book.slug }}">
+               <div class="search-card">
+                   <a href="/book/{{ book.slug }}">
+                        <img src="{{ url_for('static', filename='images/' + book.image) }}" alt="{{ book.title }}">
+                    </a>
+                    <div class="search-info">
+                        <a href="/book/{{ book.slug }}" class="title">
+                            <h3>{{ book.title }}</h3>
+                        </a>
+                        <p class="price">{{ book.price }}</p>
+                        <a href="/book/{{ book.slug }}" class="buy-cta">Mua ngay</a>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Không tìm thấy sách nào phù hợp với yêu cầu của bạn.</p>
+    {% endif %}
+</div>
+{% endblock %}

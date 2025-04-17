@@ -5,12 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock%}</title>
 
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/search_results.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/homepage.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/book-details.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/about.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/form.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/checkout.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/cart.css') }}">
 
 <!--    <link rel="stylesheet" href="static/item.css">-->
 </head>
+
 <body>
     {% include 'layouts/header.html' %}
 
@@ -18,6 +28,10 @@
         {% block content %}{% endblock %}
     </main>
 
+<script>
+  feather.replace();
+</script>
     {% include 'layouts/footer.html' %}
+
 </body>
 </html>

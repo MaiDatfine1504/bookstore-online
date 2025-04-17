@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Đăng nhập{% endblock %}
+
+{% block content %}
+<section class="login-form-section">
+  <h2>Đăng nhập</h2>
+      <form method="POST" class="login-form">
+        <input type="text" name="username" placeholder="Tên đăng nhập/Email" required><br>
+        <input type="password" name="password" placeholder="Mật khẩu" required><br>
+        <button type="submit">Đăng nhập</button>
+      </form>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+    <p>Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký</a></p>
+</section>
+{% endblock %}

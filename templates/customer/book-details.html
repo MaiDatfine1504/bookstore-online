@@ -4,17 +4,105 @@
 
 {% block content %}
 <section class="book-detail">
-  <div class="book-img">
-    <img src="/static/images/{{ book.image }}" alt="{{ book.title }}">
-  </div>
-  <div class="book-info">
-    <h2>{{ book.title }}</h2>
-    <p><strong>Thể loại:</strong> {{ book.genre }}</p>
-    <p><strong>Giá:</strong> {{ book.price }}</p>
-    {% if book.description %}
-      <p><strong>Mô tả:</strong> {{ book.description }}</p>
-    {% endif %}
-    <a href="/sell" class="buy-btn">🛒 Đặt mua ngay</a>
+  <div class="book-container">
+    <div class="book-img">
+      <img src="/static/images/{{ book.image }}" alt="{{ book.title }}">
+    </div>
+    <div class="book-info">
+      <h2>{{ book.title }}</h2>
+      <p><strong>Nhà cung cấp:</strong> {{ book.brand }}</p>
+      <p><strong>Giá:</strong> {{ book.price }}</p>
+
+      <div class="promotion-box">
+        <table class="promotion-table">
+          <thead>
+            <tr>
+              <th colspan="2">🎁 Khuyến mãi & Ưu đãi tại BOOKSTORE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🚚</td>
+              <td>Freeship TP.HCM cho đơn hàng từ <strong>1.000.000đ</strong></td>
+            </tr>
+            <tr>
+              <td>🚛</td>
+              <td>Freeship tỉnh thành khác từ <strong>1.500.000đ</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="quantity-box">
+        <button type="button" class="qty-btn" onclick="changeQty(-1)">-</button>
+        <input type="number" id="quantity" value="1" min="1" readonly>
+        <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+
+      <div class="action-buttons">
+        <a href="{{ url_for('checkout', slug=book.slug) }}" class="buy-now">Mua ngay</a>
+        <a href="{{ url_for('add_to_cart', slug=book.slug) }}" class="add-cart">Thêm vào giỏ hàng</a>
+      </div>
+    </div>
   </div>
 </section>
+
+
+<section class="bk-description">
+  {{ description|safe }}
+</section>
+
+<section class="viewed-books">
+  <h3>Sản phẩm đã xem</h3>
+  <div class="viewed-slider-wrapper">
+    <button class="slider-btn left" onclick="scrollViewed(-1)">&#10094;</button>
+
+    <div class="viewed-slider-container" id="viewed-slider">
+      <div class="viewed-list">
+        {% for item in viewed_books %}
+          <div class="viewed-item">
+            <a href="/book/{{ item.slug }}">
+              <img src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.title }}">
+              <p>{{ item.title }}</p>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="slider-btn right" onclick="scrollViewed(1)">&#10095;</button>
+  </div>
+</section>
+
+
+<script>
+function changeQty(amount) {
+    const qtyInput = document.getElementById('quantity');
+    let currentQty = parseInt(qtyInput.value);
+    if (!isNaN(currentQty)) {
+        currentQty += amount;
+        if (currentQty < 1) currentQty = 1;
+        qtyInput.value = currentQty;
+    }
+}
+</script>
+
+<script>
+  let currentPosition = 0;
+  const itemWidth = 166; // 150px item + 16px gap
+  const maxVisible = 5;
+
+  function scrollViewed(direction) {
+    const slider = document.getElementById('viewed-slider').querySelector('.viewed-list');
+    const items = slider.querySelectorAll('.viewed-item');
+    const maxPosition = Math.max(0, items.length - maxVisible);
+
+    currentPosition += direction;
+    if (currentPosition < 0) currentPosition = 0;
+    if (currentPosition > maxPosition) currentPosition = maxPosition;
+
+    slider.style.transform = `translateX(-${currentPosition * itemWidth}px)`;
+  }
+</script>
+
 {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2>Giỏ Hàng</h2>
+{% if cart %}
+<section class="cart">
+    <table class="cart-table">
+      <tr>
+        <th>Ảnh</th>
+        <th>Tên sách</th>
+        <th>Giá</th>
+        <th>Số lượng</th>
+      </tr>
+  {% for item in cart %}
+      <tr>
+        <td><img src="{{ url_for('static', filename='images/' + item.image) }}" alt="{{ item.title }}" class="thumbnail"></td>
+        <td>{{ item.title }}</td>
+        <td>{{ item.price }} VND</td>
+        <td>{{ item.quantity }}</td>
+      </tr>
+  {% endfor %}
+</table>
+
+    <div class="cart-total">
+      Tổng cộng: {{ total_price }} VND
+    </div>
+
+    <form action="{{ url_for('checkout') }}" method="POST">
+      <button type="submit" class="checkout-btn">Thanh toán</button>
+    </form>
+</section>
+
+{% else %}
+    <p>Giỏ hàng của bạn trống.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,94 @@
+.nav-center {
+    position: relative;
+}
+
+.search-results {
+    padding: 40px;
+}
+
+.page-content {
+    padding: 30px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Kết quả tìm kiếm theo hàng ngang */
+.search-results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.search-card {
+    width: 180px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+.search-card:hover {
+    transform: translateY(-5px);
+}
+
+.search-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.search-info h3 {
+    font-size: 14px;
+    margin: 5px 0;
+    min-height: 36px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.search-info .price {
+    color: #9C1A1C;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+#suggestions {
+    background: #fff;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    border: 1px solid #ddd;
+    position: absolute;
+    z-index: 999;
+    width: 100%px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+.suggestion-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestion-item img {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.suggestion-item:hover {
+    background: #f3f3f3;
+}
+
+

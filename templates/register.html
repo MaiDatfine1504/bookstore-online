@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Đăng ký{% endblock %}
+
+{% block content %}
+<section class="register-form-section">
+  <h2>Đăng ký</h2>
+    <form method="POST" class="register-form">
+      <input type="text" name="username" placeholder="Tên đăng nhập" required><br>
+      <input type="password" name="password" placeholder="Mật khẩu" required><br>
+      <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu" required><br>
+      <select name="role" required>
+        <option value="customer">Người dùng</option>
+        <option value="admin">Quản trị viên</option>
+      </select></br>
+      <button type="submit">Đăng ký</button>
+    </form>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+  <p>Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p>
+</section>
+  <h2>Đăng ký</h2>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Cấu trúc chung cho trang thanh toán */
+.checkout-container {
+    max-width: 960px; /* Giới hạn chiều rộng cho đẹp */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+/* Tiêu đề trang */
+.checkout-container h2 {
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Phần thông tin thanh toán */
+.checkout-container form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-container label {
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.checkout-container input[type="text"],
+.checkout-container select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.checkout-container button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.checkout-container button:hover {
+    background-color: #45a049;
+}
+
+/* Giỏ hàng */
+.checkout-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.checkout-container th,
+.checkout-container td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.checkout-container th {
+    background-color: #f9f9f9;
+}
+
+.checkout-container .total {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+    margin-top: 20px;
+}
+
+/* Thông báo khi giỏ hàng trống */
+.checkout-container p {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+}
+
+/* Đảm bảo giỏ hàng có chiều rộng tốt khi màn hình nhỏ */
+@media (max-width: 768px) {
+    .checkout-container {
+        padding: 10px;
+    }
+
+    .checkout-container input[type="text"],
+    .checkout-container select,
+    .checkout-container button {
+        font-size: 14px;
+    }
+
+    .checkout-container .total {
+        font-size: 16px;
+    }
+}
+
+/* Thêm style cho thumbnail */
+.checkout-container img.thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}

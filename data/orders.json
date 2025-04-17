@@ -1,0 +1,111 @@
+[
+  {
+    "name": "Nguyễn tùng",
+    "address": "Bình Thạnh",
+    "phone": "123456",
+    "payment_method": "online",
+    "items": [
+        {
+            "price": 472000,
+            "quantity": 2,
+            "slug": "bá-tước-monte-cristo-trọn-bộ-3-tập",
+            "title": "Bá tước Monte-Cristo, trọn bộ 3 tập"
+        }
+    ],
+    "total": 944000
+},
+{
+    "name": "Nguyễn tùng",
+    "address": "Bình Thạnh",
+    "phone": "123456",
+    "payment_method": "online",
+    "items": [
+        {
+            "image": "á-nô---tập-3-91425d.png",
+            "price": 116100,
+            "quantity": 1,
+            "slug": "á-nô---tập-3",
+            "title": "Á Nô - Tập 3"
+        }
+    ],
+    "total": 116100
+}
+]
+{
+    "name": null,
+    "address": null,
+    "phone": null,
+    "payment_method": null,
+    "items": [
+        {
+            "image": "bá-tước-monte-cristo-trọn-bộ-3-tập-f94f6c.png",
+            "price": 472000,
+            "quantity": 1,
+            "slug": "bá-tước-monte-cristo-trọn-bộ-3-tập",
+            "title": "Bá tước Monte-Cristo, trọn bộ 3 tập"
+        }
+    ],
+    "total": 472000
+}
+{
+    "name": null,
+    "address": null,
+    "phone": null,
+    "payment_method": null,
+    "items": [
+        {
+            "image": "á-nô---tập-3-91425d.png",
+            "price": 116100,
+            "quantity": 1,
+            "slug": "á-nô---tập-3",
+            "title": "Á Nô - Tập 3"
+        },
+        {
+            "image": "bá-tước-monte-cristo-trọn-bộ-3-tập-f94f6c.png",
+            "price": 472000,
+            "quantity": 1,
+            "slug": "bá-tước-monte-cristo-trọn-bộ-3-tập",
+            "title": "Bá tước Monte-Cristo, trọn bộ 3 tập"
+        }
+    ],
+    "total": 588100
+}
+{
+    "name": null,
+    "address": null,
+    "phone": null,
+    "payment_method": null,
+    "items": [
+        {
+            "image": "á-nô---tập-3-91425d.png",
+            "price": 116100,
+            "quantity": 2,
+            "slug": "á-nô---tập-3",
+            "title": "Á Nô - Tập 3"
+        }
+    ],
+    "total": 232200
+}
+{
+    "name": null,
+    "address": null,
+    "phone": null,
+    "payment_method": null,
+    "items": [
+        {
+            "image": "bá-tước-monte-cristo-trọn-bộ-3-tập-f94f6c.png",
+            "price": 472000,
+            "quantity": 4,
+            "slug": "bá-tước-monte-cristo-trọn-bộ-3-tập",
+            "title": "Bá tước Monte-Cristo, trọn bộ 3 tập"
+        },
+        {
+            "image": "con-nhà-giàu-tb2024-90792b.png",
+            "price": 130500,
+            "quantity": 1,
+            "slug": "con-nhà-giàu-tb2024",
+            "title": "Con nhà giàu (TB2024)"
+        }
+    ],
+    "total": 2018500
+}

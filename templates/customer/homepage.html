@@ -8,26 +8,28 @@
   <div class="banner-text">
     <h1>Chào mừng đến với BookStore</h1>
     <p>Khám phá ngàn đầu sách chất lượng, giá tốt, giao hàng tận nơi!</p>
-    <a href="/sell" class="cta-btn">Mua sách ngay</a>
   </div>
 </section>
 
 <div class="page-content">
-
 <!-- Sách mới/nổi bật -->
-<section class="section">
+<section class="featured-section">
   <h2>Sách nổi bật</h2>
   {% if featured_books %}
-    <div class="grid">
+    <div class="featured-grid">
       {% for book in featured_books %}
-        <div class="card book-card">
-          <img src="{{ url_for('static', filename='images/' ~ book.image) }}" alt="{{ book.title }}">
-          <div class="book-info">
+        <div class="card featured-book-card">
+          <a href="/book/{{ book.slug }}">
+            <img src="{{ url_for('static', filename='images/' ~ book.image) }}" alt="{{ book.title }}">
+          </a>
+        <div class="book-info">
+          <a href="/book/{{ book.slug }}" class="title">
             <h3>{{ book.title }}</h3>
-          </div>
+          </a>
+        </div>
           <div class="book-bottom">
             <p class="price"><strong>{{ book.price }}</strong></p>
-            <a href="/book/{{ book.id }}" class="buy-cta">Mua ngay</a>
+            <a href="/book/{{ book.slug }}" class="buy-cta">Mua ngay</a>
           </div>
         </div>
       {% endfor %}
@@ -37,20 +39,24 @@
   {% endif %}
 </section>
 
-<!-- Danh sách sách mới -->
-<section class="section">
+<!-- DANH SÁCH SÁCH MỚI -->
+<section class="book-section">
   <h2>Sách mới nhất</h2>
   {% if books %}
-    <div class="grid featured-grid">
+    <div class="grid book-grid">
       {% for book in books %}
         <div class="card book-card">
-          <img src="{{ url_for('static', filename='images/' + book.image) }}" alt="{{ book.title }}">
+          <a href="/book/{{ book.slug }}">
+             <img src="{{ url_for('static', filename='images/' + book.image) }}" alt="{{ book.title }}">
+          </a>
           <div class="book-info">
-            <h3>{{ book.title }}</h3>
+            <a href="/book/{{ book.slug }}" class="title">
+              <h3>{{ book.title }}</h3>
+            </a>
           </div>
           <div class="book-bottom">
             <p class="price"><strong>{{ book.price }}</strong></p>
-            <a href="/book/{{ book.id }}" class="buy-cta">Mua ngay</a>
+            <a href="/book/{{ book.slug }}" class="buy-cta">Mua ngay</a>
           </div>
         </div>
       {% endfor %}

@@ -22,5 +22,6 @@ Các vùng chức năng:
 - Nhập hoá đơn
 - Lưu hoá đơn
 - Sửa hoá đơn
+
 6. Form Quản trị (admin.html) (Quản trị)
 - Menu: Cập nhật quy định, Thống kê doanh thu
