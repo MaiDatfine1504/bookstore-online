@@ -22,8 +22,13 @@ class Base(db.Model):
     def __str__(self):
         return self.name
     
+class Rule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    min_import = db.Column(db.Integer, nullable=False, default=150)
+    min_stock = db.Column(db.Integer, nullable=False, default=300)
+    cancel_time = db.Column(db.Integer, nullable=False, default=48)
+    
 class User(Base, UserMixin):
-    __table_name__ = "users"
     name = Column(String(100))
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(50), nullable=False)

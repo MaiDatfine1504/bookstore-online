@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <title>Quản trị</title>
@@ -69,7 +70,8 @@
       margin-top: 15px;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -99,7 +101,8 @@
       margin-top: 20px;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #000;
       padding: 10px;
       text-align: center;
@@ -123,11 +126,17 @@
     }
 
     @keyframes fadein {
-      from {opacity: 0;}
-      to {opacity: 1;}
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Quản trị</h1>
@@ -156,30 +165,45 @@
     </div>
 
     <div id="thong-ke" class="tab-content">
-  </div>
+    </div>
 
-  <script>
-    function openTab(evt, tabId) {
-      const tabs = document.querySelectorAll('.tab');
-      const contents = document.querySelectorAll('.tab-content');
+    <script>
+      function openTab(evt, tabId) {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
 
-      tabs.forEach(tab => tab.classList.remove('active'));
-      contents.forEach(content => content.classList.remove('active'));
+        tabs.forEach(tab => tab.classList.remove('active'));
+        contents.forEach(content => content.classList.remove('active'));
 
-      evt.currentTarget.classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
+        evt.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+      }
 
-    // Xử lý hiển thị thông báo sau khi submit form
-    document.getElementById('quyDinhForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const message = document.getElementById('success-message');
-      message.style.display = 'block';
+      // Xử lý hiển thị thông báo sau khi submit form
+      document.getElementById('quyDinhForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = {
+          min_import: parseInt(document.querySelector('[name="min-import"]').value),
+          min_stock: parseInt(document.querySelector('[name="min-stock"]').value),
+          cancel_time: parseInt(document.querySelector('[name="cancel-time"]').value)
+        };
 
-      setTimeout(() => {
-        message.style.display = 'none';
-      }, 3000);
-    });
-  </script>
+        fetch('/update-rule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).then(res => {
+          message = document.getElementById('success-message');
+          if (res.ok) {
+            message.style.display = 'block';
+            setTimeout(() => {
+              document.getElementById('success-message').style.display = 'none';
+            }, 3000);
+          }
+        });
+      });
+
+    </script>
 </body>
+
 </html>

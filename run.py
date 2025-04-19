@@ -2,7 +2,7 @@ from flask import render_template, abort, request, redirect, url_for, flash, jso
 from flask_login import login_user
 from sqlalchemy.orm import joinedload
 from app import app, db, login
-from app.models import Book, Genre, User, UserEnum
+from app.models import Book, Genre, User, UserEnum, Rule
 import hashlib
 
 @app.context_processor
@@ -41,6 +41,22 @@ def login():
 @app.route('/admin/dashboard')
 def admin_dashboard():
     return render_template('dashboard/admin.html')
+
+@app.route('/update-rule', methods=['POST'])
+def update_rule():
+    data = request.json
+    rule = Rule.query.first()
+    if not rule:
+        rule = Rule()
+
+    rule.min_import = data.get("min_import", rule.min_import)
+    rule.min_stock = data.get("min_stock", rule.min_stock)
+    rule.cancel_time = data.get("cancel_time", rule.cancel_time)
+
+    db.session.add(rule)
+    db.session.commit()
+    return jsonify({"message": "Quy định đã được cập nhật"}), 200
+
 
 @app.route('/manager/dashboard')
 def manager_dashboard():
@@ -153,53 +169,50 @@ def add_book():
 
     return jsonify({'message': 'Thêm sách thành công'})
 
-@app.route('/api/nhap-sach', methods=['POST'])
+#Nhập sách vào kho
+@app.route("/api/add-books", methods=["POST"])
 def nhap_sach():
     data = request.json
-    books = data.get('books', [])
+    rule = Rule.query.first()
 
-    for book in books:
-        title = book.get('title')
-        genre_name = book.get('genre_name')
-        author = book.get('author')
-        quantity = book.get('quantity')
+    if not rule:
+        return jsonify({"error": "Chưa có quy định hệ thống"}), 400
 
-        if not all([title, genre_name, author, quantity]):
-            return jsonify({'error': 'Thiếu thông tin sách.'}), 400
+    for item in data:
+        title = item.get("title")
+        author = item.get("author")
+        quantity = item.get("quantity", 0)
 
-        # Tìm hoặc tạo thể loại
-        genre = Genre.query.filter_by(name=genre_name).first()
-        if not genre:
-            genre = Genre(name=genre_name)
-            db.session.add(genre)
-            db.session.commit()
+        # Kiểm tra số lượng nhập tối thiểu
+        if quantity < rule.min_import:
+            return jsonify({"error": f"Số lượng của sách '{title}' phải từ {rule.min_import} trở lên."}), 400
 
-        # Tìm sách theo tiêu đề và tác giả
-        existing_book = Book.query.filter_by(title=title, author=author).first()
+        # Kiểm tra kho hiện tại
+        book = Book.query.filter_by(title=title, author=author).first()
+        if book and book.quantity >= rule.min_stock:
+            return jsonify({"error": f"Không thể nhập '{title}' vì số lượng trong kho ≥ {rule.min_stock}."}), 400
 
-        if existing_book:
-            if existing_book.quantity >= 300:
-                return jsonify({'error': f'Sách "{title}" đã đạt giới hạn kho (≥ 300).'}), 400
-
-            new_quantity = existing_book.quantity + quantity
-            if new_quantity > 300:
-                return jsonify({'error': f'Sách "{title}" sẽ vượt giới hạn kho nếu nhập thêm.'}), 400
-
-            existing_book.quantity = new_quantity
+        if book:
+            book.quantity += quantity
         else:
-            if quantity < 150:
-                return jsonify({'error': f'Sách "{title}" phải nhập tối thiểu 150 cuốn.'}), 400
+            genre = Genre.query.filter_by(name=item.get("genre_name")).first()
+            if not genre:
+                genre = Genre(name=item.get("genre_name"))
+                db.session.add(genre)
+                db.session.flush()
 
             new_book = Book(
                 title=title,
                 author=author,
                 quantity=quantity,
+                price=0,  # có thể thêm logic
                 genre_id=genre.id
             )
             db.session.add(new_book)
 
     db.session.commit()
-    return jsonify({'message': 'Nhập sách thành công!'})
+    return jsonify({"message": "Nhập sách thành công"}), 200
+
 
 
 @app.route('/employee/dashboard')
