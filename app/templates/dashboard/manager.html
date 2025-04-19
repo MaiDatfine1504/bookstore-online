@@ -193,7 +193,7 @@
         </div>
         <div class="col-md-8 text-end d-flex justify-content-end gap-2 flex-wrap">
           <button class="btn btn-success" onclick="addBook()">➕ Thêm sách</button>
-          <button class="btn btn-primary" onclick="updateBooks()">📤 Cập nhật kho</button>
+          <button class="btn btn-primary" onclick="updateBook()">📤 Cập nhật kho</button>
         </div>
       </div>
 
@@ -204,6 +204,7 @@
             <th>Sách</th>
             <th>Thể loại</th>
             <th>Tác giả</th>
+            <th>Giá tiền</th>
             <th>URL ảnh</th>
             <th>Số lượng</th>
             <th>Trạng thái</th>
@@ -242,6 +243,7 @@
                 <td contenteditable onblur="updateBook(${book.id}, 'title', this.innerText)">${book.title}</td> 
                 <td contenteditable onblur="updateBook(${book.id}, 'genre_id', this.innerText)">${book.genre}</td>
                 <td contenteditable onblur="updateBook(${book.id}, 'author', this.innerText)">${book.author}</td>
+                <td contenteditable onblur="updateBook(${book.id}, 'price', this.innerText)">${book.price}</td>
                 <td contenteditable onblur="updateBook(${book.id}, 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
                 <td contenteditable onblur="updateBook(${book.id}, 'quantity', this.innerText)">${book.quantity}</td>
                 <td><button class="btn btn-sm btn-outline-danger" onclick="deleteBook(${book.id})">🗑</button></td>
@@ -291,6 +293,7 @@
         <td><input type="text" class="form-control" id="new-title" placeholder="Tên sách"></td>
         <td><input type="text" class="form-control" id="new-genre" placeholder="Thể loại"></td>
         <td><input type="text" class="form-control" id="new-author" placeholder="Tác giả"></td>
+        <td style="width: 100px"><input type="text" class="form-control" id="new-price" placeholder="Giá tiền"></td>
         <td><input type="text" class="form-control" id="new-image" placeholder="URL ảnh"></td>
         <td style="width: 100px;"><input type="number" class="form-control" id="new-quantity" placeholder="" min="0"></td>
         <td></td>
@@ -307,10 +310,11 @@
       const title = row.querySelector("#new-title").value.trim();
       const genre = row.querySelector("#new-genre").value.trim();
       const author = row.querySelector("#new-author").value.trim();
+      const price = row.querySelector("#new-price").value.trim();
       const image = row.querySelector("#new-image").value.trim();
       const quantity = parseInt(row.querySelector("#new-quantity").value.trim(), 10);
 
-      if (!title || !genre || !author || !image || isNaN(quantity)) {
+      if (!title || !genre || !author || isNaN(price) || !image || isNaN(quantity)) {
         alert("Vui lòng nhập đầy đủ thông tin sách.");
         return;
       }
@@ -320,7 +324,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ title, genre, author, image, quantity })
+        body: JSON.stringify({ title, genre, author, price, image, quantity })
       })
         .then(res => res.json())
         .then(data => {
@@ -357,6 +361,7 @@
             <td contenteditable onblur="updateBook(${book.id}, 'title', this.innerText)">${book.title}</td>
             <td contenteditable onblur="updateBook(${book.id}, 'genre', this.innerText)">${book.genre}</td>
             <td contenteditable onblur="updateBook(${book.id}, 'author', this.innerText)">${book.author}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'price', this.innerText)">${book.price}</td>
             <td contenteditable onblur="updateBook(${book.id}, 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
             <td contenteditable onblur="updateBook(${book.id}, 'quantity', this.innerText)">${book.quantity}</td>
             <td>${status}</td>
@@ -364,6 +369,20 @@
           </tr>
         `;
       });
+    }
+
+    function addRow() {
+      const table = document.getElementById("bookTable").getElementsByTagName("tbody")[0];
+      const rowCount = table.rows.length;
+      const newRow = table.insertRow();
+      newRow.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="text" placeholder="Tên sách" /></td>
+        <td><input type="text" placeholder="Thể loại" /></td>
+        <td><input type="text" placeholder="Tác giả" /></td>
+        <td><input type="number" min="1" class="soLuong" /></td>
+        <td class="no-print"><button class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">🗑</button></td>
+      `;
     }
 
     function clearAll() {
@@ -403,85 +422,52 @@
       const thongBao = document.getElementById("thongBao");
       alert.classList.add("d-none");
       thongBao.classList.add("d-none");
-
-      const danhSachSach = [];
+    
+      const books = [];
       for (const row of rows) {
-        const tenSach = row.cells[1].querySelector("input").value.trim();
-        const theLoai = row.cells[2].querySelector("input").value.trim();
-        const tacGia = row.cells[3].querySelector("input").value.trim();
-        const soLuong = parseInt(row.cells[4].querySelector("input").value);
-
-        if (!tenSach || !theLoai || !tacGia || isNaN(soLuong)) {
+        const title = row.cells[1].querySelector("input").value.trim();
+        const genre_name = row.cells[2].querySelector("input").value.trim();
+        const author = row.cells[3].querySelector("input").value.trim();
+        const quantity = parseInt(row.cells[4].querySelector("input").value);
+    
+        if (!title || !genre_name || !author || isNaN(quantity)) {
           alert.innerText = "Vui lòng điền đầy đủ thông tin tất cả các dòng.";
           alert.classList.remove("d-none");
           return;
         }
-
-        if (soLuong < 150) {
-          alert.innerText = `Số lượng của sách "${tenSach}" phải từ 150 trở lên.`;
+    
+        if (quantity < 150) {
+          alert.innerText = `Số lượng của sách "${title}" phải từ 150 trở lên.`;
           alert.classList.remove("d-none");
           return;
         }
-
-        danhSachSach.push({ tenSach, theLoai, tacGia, soLuong });
+    
+        books.push({ title, genre_name, author, quantity });
       }
-
-      // Kiểm tra kho
-      const kho = JSON.parse(localStorage.getItem("khoSach")) || [];
-      for (const sach of danhSachSach) {
-        const sachTrongKho = kho.find(item =>
-          item.tenSach.toLowerCase() === sach.tenSach.toLowerCase() &&
-          item.tacGia.toLowerCase() === sach.tacGia.toLowerCase()
-        );
-
-        if (sachTrongKho && sachTrongKho.soLuong >= 300) {
-          alert.innerText = `Không thể nhập "${sach.tenSach}" vì đã đủ số lượng trong kho (≥ 300).`;
+    
+      fetch("/api/nhap-sach", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ books: books }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.error) {
+            alert.innerText = data.error;
+            alert.classList.remove("d-none");
+          } else {
+            thongBao.innerText = "Nhập sách thành công!";
+            thongBao.classList.remove("d-none");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert.innerText = "Lỗi kết nối máy chủ.";
           alert.classList.remove("d-none");
-          return;
-        }
-      }
-
-      // Cập nhật kho
-      danhSachSach.forEach(sach => {
-        const existing = kho.find(item =>
-          item.tenSach.toLowerCase() === sach.tenSach.toLowerCase() &&
-          item.tacGia.toLowerCase() === sach.tacGia.toLowerCase()
-        );
-        if (existing) {
-          existing.soLuong += sach.soLuong;
-        } else {
-          kho.push(sach);
-        }
-      });
-
-      localStorage.setItem("khoSach", JSON.stringify(kho));
-      thongBao.innerText = "Nhập sách thành công!";
-      thongBao.classList.remove("d-none");
-    }
-    function capNhatToanBoKho() {
-      const rows = document.querySelectorAll("#khoBody tr");
-      const danhSachMoi = [];
-
-      for (const row of rows) {
-        const tenSach = row.cells[1]?.innerText.trim();
-        const theLoai = row.cells[2]?.innerText.trim();
-        const tacGia = row.cells[3]?.innerText.trim();
-        const soLuongStr = row.cells[4]?.innerText.trim();
-
-        const soLuong = parseInt(soLuongStr);
-
-        if (!tenSach || !theLoai || !tacGia || isNaN(soLuong) || soLuong < 0) {
-          alert("Vui lòng kiểm tra lại thông tin. Không được để trống và số lượng phải hợp lệ (≥ 0).");
-          return;
-        }
-
-        danhSachMoi.push({ tenSach, theLoai, tacGia, soLuong });
-      }
-
-      localStorage.setItem("khoSach", JSON.stringify(danhSachMoi));
-      alert("✅ Cập nhật kho thành công!");
-      renderBooks();
-    }
+        });
+    }    
   </script>
 
 </body>

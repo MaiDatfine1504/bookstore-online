@@ -55,6 +55,7 @@ def get_books():
         'title': book.title,
         'author': book.author,
         'image': book.image,
+        'price': book.price,
         'quantity': book.quantity,
         'genre': book.genre.name
     } for book in books])
@@ -67,6 +68,7 @@ def update_book(id):
     book.title = data.get('title', book.title)
     book.author = data.get('author', book.author)
     book.image = data.get('author', book.image)
+    book.price = data.get('author', book.price)
     book.quantity = data.get('quantity', book.quantity)
     book.genre_id = data.get('genre_id', book.genre_id)
     db.session.commit()
@@ -77,6 +79,7 @@ def update_book(id):
             'title': book.title,
             'author': book.author,
             'image': book.image,
+            'price': book.price,
             'quantity': book.quantity,
             'genre': book.genre.name
         }
@@ -109,6 +112,7 @@ def search_books():
             'title': book.title,
             'author': book.author,
             'image': book.image,
+            'price': book.price,
             'quantity': book.quantity,
             'genre': book.genre.name
         } for book in books
@@ -121,10 +125,11 @@ def add_book():
     title = data.get('title')
     author = data.get('author')
     image = data.get('image')
+    price = data.get('price')
     genre_name = data.get('genre')
     quantity = data.get('quantity')
 
-    if not all([title, author, image, genre_name, quantity]):
+    if not all([title, author, image, price, genre_name, quantity]):
         return jsonify({'error': 'Thiếu thông tin'}), 400
 
     # Tìm hoặc tạo thể loại
@@ -139,6 +144,7 @@ def add_book():
         title=title,
         author=author,
         image=image,
+        price=price,
         quantity=quantity,
         genre_id=genre.id
     )
@@ -146,6 +152,55 @@ def add_book():
     db.session.commit()
 
     return jsonify({'message': 'Thêm sách thành công'})
+
+@app.route('/api/nhap-sach', methods=['POST'])
+def nhap_sach():
+    data = request.json
+    books = data.get('books', [])
+
+    for book in books:
+        title = book.get('title')
+        genre_name = book.get('genre_name')
+        author = book.get('author')
+        quantity = book.get('quantity')
+
+        if not all([title, genre_name, author, quantity]):
+            return jsonify({'error': 'Thiếu thông tin sách.'}), 400
+
+        # Tìm hoặc tạo thể loại
+        genre = Genre.query.filter_by(name=genre_name).first()
+        if not genre:
+            genre = Genre(name=genre_name)
+            db.session.add(genre)
+            db.session.commit()
+
+        # Tìm sách theo tiêu đề và tác giả
+        existing_book = Book.query.filter_by(title=title, author=author).first()
+
+        if existing_book:
+            if existing_book.quantity >= 300:
+                return jsonify({'error': f'Sách "{title}" đã đạt giới hạn kho (≥ 300).'}), 400
+
+            new_quantity = existing_book.quantity + quantity
+            if new_quantity > 300:
+                return jsonify({'error': f'Sách "{title}" sẽ vượt giới hạn kho nếu nhập thêm.'}), 400
+
+            existing_book.quantity = new_quantity
+        else:
+            if quantity < 150:
+                return jsonify({'error': f'Sách "{title}" phải nhập tối thiểu 150 cuốn.'}), 400
+
+            new_book = Book(
+                title=title,
+                author=author,
+                quantity=quantity,
+                genre_id=genre.id
+            )
+            db.session.add(new_book)
+
+    db.session.commit()
+    return jsonify({'message': 'Nhập sách thành công!'})
+
 
 @app.route('/employee/dashboard')
 def employee_dashboard():
