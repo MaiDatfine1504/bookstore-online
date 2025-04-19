@@ -1,6 +1,98 @@
-{% extends "layouts/base.html" %}
+{% extends 'layouts/base.html'%}
 
-{% block title %}Trang con{% endblock %}
+{% block title %}Trang chủ | Nhà sách{% endblock %}
+
+{% block style %}
+<style>
+  body {
+    font-family: 'Times New Roman', Times, serif;
+  }
+
+  .navbar-nav {
+    margin: 0 auto;
+  }
+
+  .hero {
+    padding: 100px 0;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+
+  .footer {
+    background-color: #f1f1f1;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+  }
+
+  .feature-books .card {
+    height: 100%;
+    text-align: center;
+  }
+
+  .card-img-top {
+    width: 50%;
+    height: 70%;
+    margin: 0 auto;
+    object-fit: cover;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 1rem;
+  }
+
+  .price-cart {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-  <p>Nội dung ở đây</p>
+<!-- Hero Banner -->
+<section class="hero">
+  <div class="container">
+    <h1>Chào mừng đến với Nhà sách</h1>
+  </div>
+</section>
+
+<!-- Feature Books -->
+<section class="feature-books py-5">
+  <div class="container">
+    <div class="row g-4">
+      {% for book in books %}
+      <div class="col-md-4">
+        <div class="card h-100">
+          <img src="{{ book.image }}" class="card-img-top" alt="{{ book.title }}">
+          <div class="card-body d-flex flex-column justify-content-between">
+            <h3 class="card-title">{{ book.title }}</h3>
+            <div class="price-cart mt-auto">
+              <p class="fw-bold text-primary mb-0">Giá: {{ "{:,.0f}".format(book.price) }}đ</p>
+              <div class="action-buttons">
+                <a href="{{ url_for('book_detail', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary">Xem chi tiết</a>
+                <button class="btn btn-sm btn-success">Thêm vào giỏ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endblock %}

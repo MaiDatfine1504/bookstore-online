@@ -1,92 +1,39 @@
-<!-- templates/header.html -->
-<style>
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #333;
-      color: white;
-      padding: 10px 20px;
-    }
-  
-    nav .left, nav .right {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-  
-    nav a {
-      color: white;
-      text-decoration: none;
-    }
-  
-    .dropdown {
-      position: relative;
-    }
-  
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      top: 30px;
-      left: 0;
-      background: white;
-      color: black;
-      min-width: 150px;
-      border: 1px solid #ccc;
-      z-index: 1000;
-    }
-  
-    .dropdown-content a {
-      display: block;
-      padding: 10px;
-      color: black;
-      text-decoration: none;
-    }
-  
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
-  
-    .search-box input[type="text"] {
-      padding: 5px;
-      border: none;
-      border-radius: 3px;
-    }
-  
-    .search-box button {
-      padding: 5px 10px;
-      border: none;
-      background: #555;
-      color: white;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-  </style>
-  
-  <nav>
-    <div class="left">
-      <a href="/">Trang chủ</a>
-  
-      <div class="dropdown">
-        <a href="#">Thể loại sách ▾</a>
-        <div class="dropdown-content">
-          {% for g in genre %}
-          
-          {% endfor %}
-        </div>
-      </div>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">📚 Nhà sách</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Menu chính giữa -->
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="{{ url_for('homepage') }}">Trang chủ</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Thể loại</a>
+          <ul class="dropdown-menu">
+            {% for genre in genres %}
+            <li><a class="dropdown-item" href="{{ url_for('books_by_genre', genre_id=genre.id) }}">{{ genre.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+
+      <!-- Tìm kiếm -->
+      <form class="d-flex" action="{{ url_for('search') }}" method="get">
+        <input class="form-control me-2" type="search" name="keyword" placeholder="Tìm sách..." aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Tìm</button>
+      </form>
+
+      <!-- Giỏ hàng -->
+      <a href="#" class="btn btn-outline-primary ms-3">🛒 Giỏ hàng</a>
+
+      <!-- Đăng nhập / Đăng ký -->
+      <a href="{{ url_for('login') }}" class="btn btn-outline-secondary ms-2">Đăng nhập</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary ms-2">Đăng ký</a>
     </div>
-  
-    <div class="right">
-      <div class="search-box">
-        <form action="/search" method="get">
-          <input type="text" name="q" placeholder="Tìm kiếm sách...">
-          <button type="submit">Tìm</button>
-        </form>
-      </div>
-  
-      <a href="/login">Đăng nhập</a>
-      <a href="/register">Đăng ký</a>
-    </div>
-  </nav>
-  
+  </div>
+</nav>

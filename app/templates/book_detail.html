@@ -1,0 +1,71 @@
+{% extends 'layouts/base.html'%}
+
+{% block style %}
+<style>
+    body {
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    .navbar-nav {
+        margin: 0 auto;
+    }
+
+    .hero {
+        padding: 80px 0;
+        background: #f8f9fa;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .book-detail img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .book-info {
+        margin-top: 30px;
+    }
+
+    .footer {
+        background-color: #f1f1f1;
+        text-align: center;
+        padding: 20px 0;
+        margin-top: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero">
+    <div class="container">
+        <h1>Chi tiết sách</h1>
+    </div>
+</section>
+
+<!-- Book Detail Section -->
+<section class="container py-5">
+    <div class="row">
+      <div class="col-md-5">
+        <img src="{{ book.image }}" alt="{{ book.title }}" class="img-fluid rounded">
+      </div>
+      <div class="col-md-7">
+        <h2 class="fw-bold">{{ book.title }}</h2>
+        <p><strong>Thể loại:</strong> {{ book.genre.name }}</p>
+        <p><strong>Tác giả:</strong> {{ book.author }}</p>
+        <h4 class="text-primary mb-3">Giá: {{ "{:,.0f}".format(book.price) }}đ</h4>
+  
+        <form method="POST" action="/add-to-cart/{{ book.id }}">
+          <div class="input-group mb-3" style="max-width: 200px;">
+            <input type="number" name="quantity" value="1" min="1" class="form-control">
+            <button type="submit" class="btn btn-success">Thêm vào giỏ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

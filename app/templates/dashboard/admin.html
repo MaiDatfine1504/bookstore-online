@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản trị</title>
+  <style>
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background-color: #ffffff;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #000;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      background-color: #f5f5f5;
+      color: #000;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    .tab:hover {
+      background-color: #e0e0e0;
+    }
+
+    .tab.active {
+      background-color: #fff;
+      border-bottom: 2px solid #fff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #000;
+      color: #fff;
+    }
+
+    .alert {
+      display: none;
+      padding: 12px;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      animation: fadein 0.3s ease-in-out;
+    }
+
+    @keyframes fadein {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quản trị</h1>
+
+    <div class="tabs">
+      <div class="tab active" onclick="openTab(event, 'quy-dinh')">Thay đổi quy định</div>
+      <div class="tab" onclick="openTab(event, 'thong-ke')">Thống kê doanh thu</div>
+    </div>
+
+    <div id="quy-dinh" class="tab-content active">
+      <div id="success-message" class="alert">✔️ Thay đổi đã được lưu thành công!</div>
+
+      <h2>Thay đổi quy định</h2>
+      <form id="quyDinhForm">
+        <label>Số lượng nhập tối thiểu:</label>
+        <input type="number" name="min-import" value="150">
+
+        <label>Số lượng tồn tối thiểu trước khi nhập:</label>
+        <input type="number" name="min-stock" value="300">
+
+        <label>Thời gian hủy đơn nếu không nhận (giờ):</label>
+        <input type="number" name="cancel-time" value="48">
+
+        <button type="submit">Lưu thay đổi</button>
+      </form>
+    </div>
+
+    <div id="thong-ke" class="tab-content">
+  </div>
+
+  <script>
+    function openTab(evt, tabId) {
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.tab-content');
+
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+
+      evt.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Xử lý hiển thị thông báo sau khi submit form
+    document.getElementById('quyDinhForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const message = document.getElementById('success-message');
+      message.style.display = 'block';
+
+      setTimeout(() => {
+        message.style.display = 'none';
+      }, 3000);
+    });
+  </script>
+</body>
+</html>

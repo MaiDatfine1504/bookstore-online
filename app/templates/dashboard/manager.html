@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý sách</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --black: #000;
+      --white: #fff;
+      --gray-border: #ccc;
+    }
+
+    body {
+      background-color: var(--white);
+      font-family: 'Times New Roman', Times, serif;
+      color: var(--black);
+    }
+
+    h2,
+    h3 {
+      color: var(--black);
+      font-weight: bold;
+    }
+
+    .form-control,
+    .table td input {
+      border-radius: 8px;
+      background-color: var(--white);
+      border: 1px solid var(--gray-border);
+      padding: 8px;
+      font-size: 0.95rem;
+      color: var(--black);
+    }
+
+    .table {
+      background-color: var(--white);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background-color: #f8f9fa;
+    }
+
+    .btn {
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-weight: 500;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #333;
+      border-color: #333;
+    }
+
+    .btn-outline-danger,
+    .btn-outline-info,
+    .btn-primary {
+      border-radius: 8px;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .btn-primary {
+      background-color: var(--black);
+      border-color: var(--black);
+    }
+
+    .btn-primary:hover {
+      background-color: #333;
+      border-color: #333;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .kho-alert {
+      color: red;
+      font-weight: bold;
+    }
+
+    .status-ok {
+      color: green;
+    }
+
+    .status-low {
+      color: red;
+      font-weight: bold;
+    }
+
+    .tab-btn.active {
+      background-color: var(--black);
+      color: white;
+    }
+
+    .tab-btn {
+      background-color: white;
+      color: var(--black);
+      border: 2px solid var(--black);
+    }
+  </style>
+</head>
+
+<body class="p-4">
+
+  <div class="container">
+    <h2 class="text-center mb-4">QUẢN LÝ SÁCH</h2>
+
+    <!-- Tabs -->
+    <div class="mb-3">
+      <button class="btn tab-btn me-2 active" onclick="switchTab(event, 'nhapSach')">📘 Nhập sách</button>
+      <button class="btn tab-btn" onclick="switchTab(event, 'quanLyKho')">📚 Quản lý kho</button>
+    </div>
+
+    <!-- Nhập sách -->
+    <div id="nhapSach">
+      <h3 class="mt-4">PHIẾU NHẬP SÁCH</h3>
+      <div class="mb-3">
+        <label class="form-label">Ngày nhập:</label>
+        <input type="date" class="form-control w-auto" id="ngayNhap" />
+      </div>
+
+      <div id="alert" class="alert alert-danger d-none" role="alert"></div>
+      <div id="thongBao" class="alert alert-success d-none" role="alert"></div>
+
+      <table class="table table-bordered text-center align-middle" id="bookTable">
+        <thead class="table-secondary">
+          <tr>
+            <th>STT</th>
+            <th>Sách</th>
+            <th>Thể loại</th>
+            <th>Tác giả</th>
+            <th>Số lượng</th>
+            <th class="no-print">Xoá</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><input type="text" placeholder="Tên sách" /></td>
+            <td><input type="text" placeholder="Thể loại" /></td>
+            <td><input type="text" placeholder="Tác giả" /></td>
+            <td><input type="number" min="1" class="soLuong" /></td>
+            <td class="no-print"><button class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p id="quyDinh" class="text-muted mt-2">⚠️ <strong>Quy định:</strong> Số lượng nhập mỗi đầu sách ít nhất 150, chỉ
+        nhập những đầu sách có số lượng &lt; 300.</p>
+
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        <button class="btn btn-success" onclick="submitForm()">📥 Nhập sách</button>
+        <button class="btn btn-primary" onclick="exportPDF()">🖨 Xuất phiếu</button>
+        <button class="btn btn-outline-danger" onclick="clearAll()">🗑 Xoá tất cả</button>
+        <button class="btn btn-outline-info" onclick="addRow()">➕ Thêm dòng</button>
+      </div>
+    </div>
+
+    <!-- Tab quản lý kho -->
+    <div id="quanLyKho" class="hidden">
+      <h3 class="mt-4">TỒN KHO HIỆN TẠI</h3>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="🔍 Tìm theo tên, thể loại hoặc tác giả" id="searchInput"
+            oninput="searchBooks()">
+        </div>
+        <div class="col-md-8 text-end d-flex justify-content-end gap-2 flex-wrap">
+          <button class="btn btn-success" onclick="addBook()">➕ Thêm sách</button>
+          <button class="btn btn-primary" onclick="updateBooks()">📤 Cập nhật kho</button>
+        </div>
+      </div>
+
+      <table class="table table-bordered text-center t">
+        <thead class="table-secondary">
+          <tr>
+            <th>STT</th>
+            <th>Sách</th>
+            <th>Thể loại</th>
+            <th>Tác giả</th>
+            <th>URL ảnh</th>
+            <th>Số lượng</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="booksBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(event, tabId) {
+      document.getElementById("nhapSach").classList.add("hidden");
+      document.getElementById("quanLyKho").classList.add("hidden");
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(tabId).classList.remove("hidden");
+      event.target.classList.add("active");
+      if (tabId === "quanLyKho") renderBooks();
+    }
+
+    function renderBooks() {
+      fetch('/api/books')
+        .then(response => response.json())
+        .then(books => {
+          const tbody = document.getElementById("booksBody");
+          tbody.innerHTML = "";
+          if (books.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7"><em>No books available.</em></td></tr>`;
+            return;
+          }
+          books.forEach((book, i) => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${i + 1}</td>
+                <td contenteditable onblur="updateBook(${book.id}, 'title', this.innerText)">${book.title}</td> 
+                <td contenteditable onblur="updateBook(${book.id}, 'genre_id', this.innerText)">${book.genre}</td>
+                <td contenteditable onblur="updateBook(${book.id}, 'author', this.innerText)">${book.author}</td>
+                <td contenteditable onblur="updateBook(${book.id}, 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
+                <td contenteditable onblur="updateBook(${book.id}, 'quantity', this.innerText)">${book.quantity}</td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="deleteBook(${book.id})">🗑</button></td>
+              </tr>
+            `;
+          });
+        });
+    }
+
+    function updateBook(id, field, value) {
+      const data = {};
+      data[field] = value;
+
+      fetch(`/api/books/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.message);
+          renderBooks();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function deleteBook(id) {
+      fetch(`/api/books/${id}`, {
+        method: 'DELETE',
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.message);
+          renderBooks();  // Render lại sau khi xóa
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function addBook() {
+      const tbody = document.getElementById("booksBody");
+
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `
+        <td>#</td>
+        <td><input type="text" class="form-control" id="new-title" placeholder="Tên sách"></td>
+        <td><input type="text" class="form-control" id="new-genre" placeholder="Thể loại"></td>
+        <td><input type="text" class="form-control" id="new-author" placeholder="Tác giả"></td>
+        <td><input type="text" class="form-control" id="new-image" placeholder="URL ảnh"></td>
+        <td style="width: 100px;"><input type="number" class="form-control" id="new-quantity" placeholder="" min="0"></td>
+        <td></td>
+        <td>
+          <button class="btn btn-sm btn-success" onclick="saveNewBook(this)">💾</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove()">🗑</button>
+        </td>
+      `;
+      tbody.prepend(newRow);
+    }
+
+    function saveNewBook(button) {
+      const row = button.closest("tr");
+      const title = row.querySelector("#new-title").value.trim();
+      const genre = row.querySelector("#new-genre").value.trim();
+      const author = row.querySelector("#new-author").value.trim();
+      const image = row.querySelector("#new-image").value.trim();
+      const quantity = parseInt(row.querySelector("#new-quantity").value.trim(), 10);
+
+      if (!title || !genre || !author || !image || isNaN(quantity)) {
+        alert("Vui lòng nhập đầy đủ thông tin sách.");
+        return;
+      }
+
+      fetch('/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, genre, author, image, quantity })
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert("Đã thêm sách thành công!");
+          renderBooks(); // render lại danh sách từ server
+        })
+        .catch(err => {
+          console.error("Lỗi khi thêm sách:", err);
+          alert("Đã xảy ra lỗi khi thêm sách.");
+        });
+    }
+
+    function searchBooks() {
+      const query = document.getElementById("searchInput").value.trim();
+      fetch(`/api/books/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => renderBooksFromServer(data));
+    }
+
+    function renderBooksFromServer(books) {
+      const tbody = document.getElementById("booksBody");
+      tbody.innerHTML = "";
+
+      if (books.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><em>Không tìm thấy kết quả.</em></td></tr>`;
+        return;
+      }
+
+      books.forEach((book, i) => {
+        const status = book.quantity < 50 ? '<span class="status-low">Sắp hết</span>' : '<span class="status-ok">Còn hàng</span>';
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'title', this.innerText)">${book.title}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'genre', this.innerText)">${book.genre}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'author', this.innerText)">${book.author}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
+            <td contenteditable onblur="updateBook(${book.id}, 'quantity', this.innerText)">${book.quantity}</td>
+            <td>${status}</td>
+            <td><button onclick="deleteBook(${book.id})">🗑</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function clearAll() {
+      const tbody = document.getElementById("bookTable").getElementsByTagName("tbody")[0];
+      tbody.innerHTML = "";
+      addRow();
+    }
+
+    function updateSTT() {
+      const rows = document.querySelectorAll("#bookTable tbody tr");
+      rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1;
+      });
+    }
+
+    function exportPDF() {
+      // Ẩn các phần không cần in
+      document.querySelectorAll('.btn, #quyDinh, td button, #thongBao').forEach(el => el.classList.add('no-print'));
+
+      const element = document.getElementById("nhapSach");
+      const opt = {
+        margin: 0.5,
+        filename: `phieu-nhap-sach-${new Date().toLocaleDateString("vi-VN")}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } // 📌 đổi sang landscape
+      };
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        document.querySelectorAll('.btn, #quyDinh, td button, #thongBao').forEach(el => el.classList.remove('no-print'));
+      });
+    }
+
+    function submitForm() {
+      const rows = document.querySelectorAll("#bookTable tbody tr");
+      const alert = document.getElementById("alert");
+      const thongBao = document.getElementById("thongBao");
+      alert.classList.add("d-none");
+      thongBao.classList.add("d-none");
+
+      const danhSachSach = [];
+      for (const row of rows) {
+        const tenSach = row.cells[1].querySelector("input").value.trim();
+        const theLoai = row.cells[2].querySelector("input").value.trim();
+        const tacGia = row.cells[3].querySelector("input").value.trim();
+        const soLuong = parseInt(row.cells[4].querySelector("input").value);
+
+        if (!tenSach || !theLoai || !tacGia || isNaN(soLuong)) {
+          alert.innerText = "Vui lòng điền đầy đủ thông tin tất cả các dòng.";
+          alert.classList.remove("d-none");
+          return;
+        }
+
+        if (soLuong < 150) {
+          alert.innerText = `Số lượng của sách "${tenSach}" phải từ 150 trở lên.`;
+          alert.classList.remove("d-none");
+          return;
+        }
+
+        danhSachSach.push({ tenSach, theLoai, tacGia, soLuong });
+      }
+
+      // Kiểm tra kho
+      const kho = JSON.parse(localStorage.getItem("khoSach")) || [];
+      for (const sach of danhSachSach) {
+        const sachTrongKho = kho.find(item =>
+          item.tenSach.toLowerCase() === sach.tenSach.toLowerCase() &&
+          item.tacGia.toLowerCase() === sach.tacGia.toLowerCase()
+        );
+
+        if (sachTrongKho && sachTrongKho.soLuong >= 300) {
+          alert.innerText = `Không thể nhập "${sach.tenSach}" vì đã đủ số lượng trong kho (≥ 300).`;
+          alert.classList.remove("d-none");
+          return;
+        }
+      }
+
+      // Cập nhật kho
+      danhSachSach.forEach(sach => {
+        const existing = kho.find(item =>
+          item.tenSach.toLowerCase() === sach.tenSach.toLowerCase() &&
+          item.tacGia.toLowerCase() === sach.tacGia.toLowerCase()
+        );
+        if (existing) {
+          existing.soLuong += sach.soLuong;
+        } else {
+          kho.push(sach);
+        }
+      });
+
+      localStorage.setItem("khoSach", JSON.stringify(kho));
+      thongBao.innerText = "Nhập sách thành công!";
+      thongBao.classList.remove("d-none");
+    }
+    function capNhatToanBoKho() {
+      const rows = document.querySelectorAll("#khoBody tr");
+      const danhSachMoi = [];
+
+      for (const row of rows) {
+        const tenSach = row.cells[1]?.innerText.trim();
+        const theLoai = row.cells[2]?.innerText.trim();
+        const tacGia = row.cells[3]?.innerText.trim();
+        const soLuongStr = row.cells[4]?.innerText.trim();
+
+        const soLuong = parseInt(soLuongStr);
+
+        if (!tenSach || !theLoai || !tacGia || isNaN(soLuong) || soLuong < 0) {
+          alert("Vui lòng kiểm tra lại thông tin. Không được để trống và số lượng phải hợp lệ (≥ 0).");
+          return;
+        }
+
+        danhSachMoi.push({ tenSach, theLoai, tacGia, soLuong });
+      }
+
+      localStorage.setItem("khoSach", JSON.stringify(danhSachMoi));
+      alert("✅ Cập nhật kho thành công!");
+      renderBooks();
+    }
+  </script>
+
+</body>
+
+</html>

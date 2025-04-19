@@ -1,0 +1,128 @@
+[
+    {
+        "id": 1,
+        "title": "Đắc Nhân Tâm",
+        "author": "Dale Carnegie",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745001765/dac-nhan-tam_sptnao.jpg",
+        "price": 98000,
+        "quantity": 50,
+        "genre_id": 3
+    },
+    {
+        "id": 2,
+        "title": "Tư Duy Nhanh Và Chậm",
+        "author": "Daniel Kahneman",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745001200/462558750-1083111936819329-1957541486232979466-n_y2dj6e.png",
+        "price": 150000,
+        "quantity": 30,
+        "genre_id": 3
+    },
+    {
+        "id": 3,
+        "title": "Thức Tỉnh Mục Đích Sống",
+        "author": "Robin Sharma",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745002905/images_qe35rk.jpg",
+        "price": 110000,
+        "quantity": 40,
+        "genre_id": 3
+    },
+    {
+        "id": 4,
+        "title": "Vũ Trụ Trong Vỏ Hạt Dẻ",
+        "author": "Stephen Hawking",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745002945/nxbtre_thumb_26112017_041133_xsdafo.jpg",
+        "price": 135000,
+        "quantity": 15,
+        "genre_id": 2
+    },
+    {
+        "id": 5,
+        "title": "Lược Sử Thời Gian",
+        "author": "Stephen Hawking",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003014/105-a-brief-history-of-time-bg-n7w_urd00m.webp",
+        "price": 145000,
+        "quantity": 20,
+        "genre_id": 2
+    },
+    {
+        "id": 6,
+        "title": "Sự Sống Bất Tử",
+        "author": "Rebecca Skloot",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003022/thumb-0127_zg3hnh.jpg",
+        "price": 130000,
+        "quantity": 18,
+        "genre_id": 2
+    },
+    {
+        "id": 7,
+        "title": "Nguồn Gốc Các Loài",
+        "author": "Charles Darwin",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003239/image-20230320110843411_hifimi.jpg",
+        "price": 125000,
+        "quantity": 22,
+        "genre_id": 2
+    },
+    {
+        "id": 8,
+        "title": "Nhà Giả Kim",
+        "author": "Paulo Coelho",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003258/Nh_C3_A0_gi_E1_BA_A3_kim__28s_C3_A1ch_29_ahylql.jpg",
+        "price": 100000,
+        "quantity": 35,
+        "genre_id": 1
+    },
+    {
+        "id": 9,
+        "title": "Chiếc lược ngà",
+        "author": "Nguyễn Quang Sáng",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003340/chiec-luoc-nga_2_gtc3zp.jpg",
+        "price": 115000,
+        "quantity": 28,
+        "genre_id": 1
+    },
+    {
+        "id": 10,
+        "title": "Tuổi Trẻ Đáng Giá Bao Nhiêu",
+        "author": "Phạm Lữ Ân",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003398/images_pzbkyt.jpg",
+        "price": 90000,
+        "quantity": 45,
+        "genre_id": 1
+    },
+    {
+        "id": 11,
+        "title": "Bắt Trẻ Đồng Xanh",
+        "author": "J.D. Salinger",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003417/B_E1_BA_AFt_tr_E1_BA_BB__C4_91_E1_BB_93ng_xanh_28s_C3_A1ch_29_fnjibh.jpg",
+        "price": 105000,
+        "quantity": 33,
+        "genre_id": 1
+    },
+    {
+        "id": 12,
+        "title": "Những Người Khốn Khổ",
+        "author": "Victor Hugo",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003462/bo-sach-nhung-nguoi-khon-kho-5_dc3bah.jpg",
+        "price": 140000,
+        "quantity": 20,
+        "genre_id": 1
+    },
+    {
+        "id": 13,
+        "title": "Người Giàu Có Nhất Thành Babylon",
+        "author": "George S. Clason",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003475/Ng_C6_B0_E1_BB_9Di_gi_C3_A0u_c_C3_B3_nh_E1_BA_A5t_th_C3_A0nh_Babylon_oygewz.jpg",
+        "price": 105000,
+        "quantity": 42,
+        "genre_id": 4
+    },
+    {
+        "id": 14,
+        "title": "Từ Tốt Đến Vĩ Đại",
+        "author": "Jim Collins",
+        "image": "https://res.cloudinary.com/don0viqcb/image/upload/v1745003524/images_picnmi.jpg",
+        "price": 145000,
+        "quantity": 18,
+        "genre_id": 4
+    }
+]
