@@ -16,7 +16,8 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Thể loại</a>
           <ul class="dropdown-menu">
             {% for genre in genres %}
-            <li><a class="dropdown-item" href="{{ url_for('books_by_genre', genre_id=genre.id) }}">{{ genre.name }}</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('books_by_genre', genre_id=genre.id) }}">{{ genre.name }}</a>
+            </li>
             {% endfor %}
           </ul>
         </li>
@@ -29,11 +30,17 @@
       </form>
 
       <!-- Giỏ hàng -->
-      <a href="#" class="btn btn-outline-primary ms-3">🛒 Giỏ hàng</a>
+      <a href="{{ url_for('view_cart') }}" class="btn btn-outline-primary ms-3">🛒 Giỏ hàng</a>
 
       <!-- Đăng nhập / Đăng ký -->
+      {% if current_user.is_authenticated %}
+      <span class="ms-3">👋 Xin chào, {{ current_user.name }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger ms-2">Đăng xuất</a>
+      {% else %}
       <a href="{{ url_for('login') }}" class="btn btn-outline-secondary ms-2">Đăng nhập</a>
       <a href="{{ url_for('register') }}" class="btn btn-primary ms-2">Đăng ký</a>
+      {% endif %}
+
     </div>
   </div>
 </nav>

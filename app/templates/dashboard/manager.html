@@ -193,7 +193,6 @@
         </div>
         <div class="col-md-8 text-end d-flex justify-content-end gap-2 flex-wrap">
           <button class="btn btn-success" onclick="addBook()">➕ Thêm sách</button>
-          <button class="btn btn-primary" onclick="updateBook()">📤 Cập nhật kho</button>
         </div>
       </div>
 
@@ -238,25 +237,54 @@
           }
           books.forEach((book, i) => {
             tbody.innerHTML += `
-              <tr>
+              <tr data-id = ${book.id}>
                 <td>${i + 1}</td>
-                <td contenteditable onblur="updateBook(${book.id}, 'title', this.innerText)">${book.title}</td> 
-                <td contenteditable onblur="updateBook(${book.id}, 'genre_id', this.innerText)">${book.genre}</td>
-                <td contenteditable onblur="updateBook(${book.id}, 'author', this.innerText)">${book.author}</td>
-                <td contenteditable onblur="updateBook(${book.id}, 'price', this.innerText)">${book.price}</td>
-                <td contenteditable onblur="updateBook(${book.id}, 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
-                <td contenteditable onblur="updateBook(${book.id}, 'quantity', this.innerText)">${book.quantity}</td>
+                <td contenteditable 'title', this.innerText)">${book.title}</td> 
+                <td contenteditable 'genre_id', this.innerText)">${book.genre}</td>
+                <td contenteditable 'author', this.innerText)">${book.author}</td>
+                <td contenteditable 'price', this.innerText)">${book.price}</td>
+                <td contenteditable 'image', this.innerText)" style="max-width: 200px; word-break: break-word; white-space: normal; overflow-wrap: break-word;">${book.image}</td>
+                <td contenteditable 'quantity', this.innerText)">${book.quantity}</td>
                 <td><button class="btn btn-sm btn-outline-danger" onclick="deleteBook(${book.id})">🗑</button></td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editRow(this)">📝</button>
+                    <button class="btn btn-success btn-sm d-none" onclick="saveRow(this)">💾</button>
+                </td>
               </tr>
             `;
           });
         });
     }
 
-    function updateBook(id, field, value) {
-      const data = {};
-      data[field] = value;
-
+    function editRow(button) {
+      const row = button.closest("tr");
+      const cells = row.querySelectorAll("td");
+    
+      // Bỏ qua STT và cột cuối
+      for (let i = 1; i <= 6; i++) {
+        const current = cells[i].innerText;
+        cells[i].innerHTML = `<input class="form-control" value="${current}">`;
+      }
+    
+      // Hiện nút lưu, ẩn nút chỉnh sửa
+      row.querySelector(".btn-warning").classList.add("d-none");
+      row.querySelector(".btn-success").classList.remove("d-none");
+    }
+    
+    function saveRow(button) {
+      const row = button.closest("tr");
+      const id = row.getAttribute("data-id");
+      const inputs = row.querySelectorAll("input");
+    
+      const data = {
+        title: inputs[0].value.trim(),
+        genre: inputs[1].value.trim(),
+        author: inputs[2].value.trim(),
+        price: parseFloat(inputs[3].value.trim()),
+        image: inputs[4].value.trim(),
+        quantity: parseInt(inputs[5].value.trim())
+      };
+    
       fetch(`/api/books/${id}`, {
         method: 'PUT',
         headers: {
@@ -266,12 +294,13 @@
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data.message);
+          alert(data.message);
           renderBooks();
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Lỗi cập nhật:', error));
+        console.log(data);
     }
-
+    
     function deleteBook(id) {
       fetch(`/api/books/${id}`, {
         method: 'DELETE',
@@ -417,54 +446,65 @@
     }
 
     function submitForm() {
-      const rows = document.querySelectorAll("#bookTable tbody tr");
-      const alert = document.getElementById("alert");
-      const thongBao = document.getElementById("thongBao");
-      alert.classList.add("d-none");
-      thongBao.classList.add("d-none");
-    
-      const books = [];
-      for (const row of rows) {
-        const title = row.cells[1].querySelector("input").value.trim();
-        const genre_name = row.cells[2].querySelector("input").value.trim();
-        const author = row.cells[3].querySelector("input").value.trim();
-        const quantity = parseInt(row.cells[4].querySelector("input").value);
-    
-        if (!title || !genre_name || !author || isNaN(quantity)) {
-          alert.innerText = "Vui lòng điền đầy đủ thông tin tất cả các dòng.";
-          alert.classList.remove("d-none");
-          return;
-        }
-    
-        if (quantity < 150) {
-          alert.innerText = `Số lượng của sách "${title}" phải từ 150 trở lên.`;
-          alert.classList.remove("d-none");
-          return;
-        }
-    
-        books.push({ title, genre_name, author, quantity });
-      }
-    
-      fetch("/api/add-books", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ books: books }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) {
-            alert.innerText = data.error;
-            alert.classList.remove("d-none");
-          } else {
-            thongBao.innerText = "Nhập sách thành công!";
-            thongBao.classList.remove("d-none");
+      fetch('/api/rule')
+        .then(res => res.json())
+        .then(rule => {
+          const MIN_IMPORT = rule.min_import;
+
+          const rows = document.querySelectorAll("#bookTable tbody tr");
+          const alert = document.getElementById("alert");
+          const thongBao = document.getElementById("thongBao");
+          alert.classList.add("d-none");
+          thongBao.classList.add("d-none");
+
+          const books = [];
+          for (const row of rows) {
+            const title = row.cells[1].querySelector("input").value.trim();
+            const genre_name = row.cells[2].querySelector("input").value.trim();
+            const author = row.cells[3].querySelector("input").value.trim();
+            const quantity = parseInt(row.cells[4].querySelector("input").value);
+
+            if (!title || !genre_name || !author || isNaN(quantity)) {
+              alert.innerText = "Vui lòng điền đầy đủ thông tin tất cả các dòng.";
+              alert.classList.remove("d-none");
+              return;
+            }
+
+            if (quantity < MIN_IMPORT) {
+              alert.innerText = `Số lượng của sách "${title}" phải từ ${MIN_IMPORT} trở lên.`;
+              alert.classList.remove("d-none");
+              return;
+            }
+
+            books.push({ title, genre_name, author, quantity });
           }
+
+          fetch('/api/add-books', {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ books: books }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.error) {
+                alert.innerText = data.error;
+                alert.classList.remove("d-none");
+              } else {
+                thongBao.innerText = "Nhập sách thành công!";
+                thongBao.classList.remove("d-none");
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              alert.innerText = "Lỗi kết nối máy chủ.";
+              alert.classList.remove("d-none");
+            });
         })
-        .catch((err) => {
-          console.error(err);
-          alert.innerText = "Lỗi kết nối máy chủ.";
+        .catch(err => {
+          console.error("Không thể lấy quy định hệ thống:", err);
+          alert.innerText = "Không thể lấy quy định hệ thống.";
           alert.classList.remove("d-none");
         });
     }    

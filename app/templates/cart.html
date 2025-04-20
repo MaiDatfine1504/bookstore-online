@@ -1,0 +1,165 @@
+{% extends 'layouts/base.html' %}
+
+{% block style %}
+<style>
+    body {
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    .navbar-nav {
+        margin: 0 auto;
+    }
+
+    .tab-content {
+        margin-top: 20px;
+    }
+
+    .footer {
+        background-color: #f1f1f1;
+        text-align: center;
+        padding: 20px 0;
+        margin-top: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Thanh toán</h2>
+
+    <ul class="nav nav-tabs" id="checkoutTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if tab == 'cart' %}active{% endif %}" id="cart-tab" data-bs-toggle="tab" href="#cart" role="tab">🛒 Xem giỏ hàng</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if tab == 'method' %}active{% endif %}" id="method-tab" data-bs-toggle="tab" href="#method" role="tab">💳 Chọn hình thức thanh toán</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if tab == 'address' %}active{% endif %}" id="address-tab" data-bs-toggle="tab" href="#address" role="tab">🏠 Địa chỉ giao hàng</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if tab == 'result' %}active{% endif %}" id="result-tab" data-bs-toggle="tab" href="#result" role="tab">✅ Kết quả</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="checkoutTabsContent">
+        <!-- Cart Tab -->
+        <div class="tab-pane fade {% if tab == 'cart' %}show active{% endif %}" id="cart" role="tabpanel">
+            <h4>Giỏ hàng của bạn</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Sách</th>
+                        <th>Tác giả</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart %}
+                    <tr>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.author }}</td>
+                        <td>{{ "{:,.0f}".format(item.price) }}đ</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ "{:,.0f}".format(item.price * item.quantity) }}đ</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Payment Method Tab -->
+        <div class="tab-pane fade {% if tab == 'method' %}show active{% endif %}" id="method" role="tabpanel">
+            <h4>Chọn hình thức thanh toán</h4>
+            <form method="POST" action="{{ url_for('checkout') }}">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment_method" id="online" value="online" required>
+                    <label class="form-check-label" for="online">Thanh toán Online</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment_method" id="offline" value="offline" required>
+                    <label class="form-check-label" for="offline">Thanh toán khi nhận hàng</label>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Xác nhận hình thức thanh toán</button>
+            </form>
+        </div>
+
+        <!-- Address Tab -->
+        <div class="tab-pane fade {% if tab == 'address' %}show active{% endif %}" id="address" role="tabpanel">
+            <h4>Địa chỉ giao hàng</h4>
+            <form method="POST" action="{{ url_for('submit_address') }}">
+                <div class="mb-3">
+                    <label for="house_number" class="form-label">Số nhà</label>
+                    <input type="text" class="form-control" id="house_number" name="house_number" value="{{ address.house_number if address }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="street" class="form-label">Tên đường</label>
+                    <input type="text" class="form-control" id="street" name="street" value="{{ address.street if address }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="ward" class="form-label">Phường</label>
+                    <input type="text" class="form-control" id="ward" name="ward" value="{{ address.ward if address }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="district" class="form-label">Quận</label>
+                    <input type="text" class="form-control" id="district" name="district" value="{{ address.district if address }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="city" class="form-label">Thành phố</label>
+                    <input type="text" class="form-control" id="city" name="city" value="{{ address.city if address }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="country" class="form-label">Quốc gia</label>
+                    <input type="text" class="form-control" id="country" name="country" value="{{ address.country if address }}" required>
+                </div>
+                <button type="submit" class="btn btn-success">Lưu địa chỉ</button>
+            </form>
+        </div>
+
+        <!-- Result Tab -->
+        <div class="tab-pane fade {% if tab == 'result' %}show active{% endif %}" id="result" role="tabpanel">
+            <h4>Kết quả thanh toán</h4>
+            {% if receipt %}
+            <p>Mã hóa đơn: <strong>{{ receipt.id }}</strong></p>
+            <p>Tổng tiền: <strong>{{ "{:,.0f}".format(receipt.total_price) }}đ</strong></p>
+            <p>Phương thức: <strong>{{ payment_method|capitalize }}</strong></p>
+            <h5>Chi tiết hóa đơn</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Sách</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in receipt.details %}
+                    <tr>
+                        <td>{{ d.book.title }}</td>
+                        <td>{{ d.quantity }}</td>
+                        <td>{{ "{:,.0f}".format(d.unit_price) }}đ</td>
+                        <td>{{ "{:,.0f}".format(d.quantity * d.unit_price) }}đ</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Chưa có hóa đơn để hiển thị.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const activeTab = "{{ tab }}";
+        if (activeTab) {
+            const tabTrigger = document.querySelector(`#${activeTab}-tab`);
+            if (tabTrigger) new bootstrap.Tab(tabTrigger).show();
+        }
+    });
+</script>
+{% endblock %}
