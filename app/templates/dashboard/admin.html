@@ -203,6 +203,7 @@
 
     // Load danh sách tháng/năm có trong CSDL
     window.onload = function () {
+      fetchRule();
       fetch('/revenue-stats/times')
         .then(res => res.json())
         .then(data => {
@@ -217,6 +218,23 @@
     };
 
     let categoryChart, bookChart;
+
+    function fetchRule() {
+      fetch('/api/rule')
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+            return;
+          }
+          document.querySelector('[name="min-import"]').value = data.min_import;
+          document.querySelector('[name="min-stock"]').value = data.min_stock;
+          document.querySelector('[name="cancel-time"]').value = data.cancel_time;
+        })
+        .catch(err => {
+          console.error('Lỗi khi tải quy định:', err);
+        });
+    }    
 
     function fetchStats() {
       const [month, year] = document.getElementById('time').value.split('-');

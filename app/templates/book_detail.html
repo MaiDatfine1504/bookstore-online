@@ -63,6 +63,7 @@
         <form method="POST" action="/add-to-cart/{{ book.id }}">
           <div class="input-group mb-3" style="max-width: 200px;">
             <input type="number" name="quantity" value="1" min="1" class="form-control">
+            <input type="hidden" name="next" value="{{ url_for('book_detail', book_id=book.id) }}">
             <button type="submit" class="btn btn-success">Thêm vào giỏ</button>
           </div>
         </form>        

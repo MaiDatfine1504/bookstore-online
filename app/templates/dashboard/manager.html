@@ -7,6 +7,8 @@
   <title>Quản lý sách</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
   <style>
     :root {
       --black: #000;
@@ -126,6 +128,37 @@
   </style>
 </head>
 
+<!-- Modal hiển thị chi tiết đơn hàng -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderDetailLabel">Chi tiết đơn hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered text-center">
+          <thead class="table-secondary">
+            <tr>
+              <th>STT</th>
+              <th>Tên sách</th>
+              <th>Số lượng</th>
+              <th>Đơn giá</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody id="orderDetailBody">
+            <!-- JS sẽ render vào đây -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <body class="p-4">
 
   <div class="container">
@@ -135,6 +168,7 @@
     <div class="mb-3">
       <button class="btn tab-btn me-2 active" onclick="switchTab(event, 'nhapSach')">📘 Nhập sách</button>
       <button class="btn tab-btn" onclick="switchTab(event, 'quanLyKho')">📚 Quản lý kho</button>
+      <button class="btn tab-btn" onclick="switchTab(event, 'quanLyDonHang')">📦 Quản lý đơn hàng</button>
     </div>
 
     <!-- Nhập sách -->
@@ -213,17 +247,42 @@
         <tbody id="booksBody"></tbody>
       </table>
     </div>
+
+    <!-- Tab quản lý đơn hàng -->
+    <div id="quanLyDonHang" class="hidden">
+      <h3 class="mt-4">DANH SÁCH ĐƠN HÀNG</h3>
+
+      <table class="table table-bordered text-center align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>Mã đơn</th>
+            <th>Người mua</th>
+            <th>Ngày mua</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody id="orderTableBody">
+          <!-- Dữ liệu đơn hàng sẽ được render tại đây -->
+        </tbody>
+      </table>
+    </div>
+
   </div>
 
   <script>
     function switchTab(event, tabId) {
       document.getElementById("nhapSach").classList.add("hidden");
       document.getElementById("quanLyKho").classList.add("hidden");
+      document.getElementById("quanLyDonHang").classList.add("hidden"); // thêm dòng này
       document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
       document.getElementById(tabId).classList.remove("hidden");
       event.target.classList.add("active");
+    
       if (tabId === "quanLyKho") renderBooks();
-    }
+      if (tabId === "quanLyDonHang") fetchOrders(); // gọi hàm mới
+    }    
 
     function renderBooks() {
       fetch('/api/books')
@@ -259,23 +318,23 @@
     function editRow(button) {
       const row = button.closest("tr");
       const cells = row.querySelectorAll("td");
-    
+
       // Bỏ qua STT và cột cuối
       for (let i = 1; i <= 6; i++) {
         const current = cells[i].innerText;
         cells[i].innerHTML = `<input class="form-control" value="${current}">`;
       }
-    
+
       // Hiện nút lưu, ẩn nút chỉnh sửa
       row.querySelector(".btn-warning").classList.add("d-none");
       row.querySelector(".btn-success").classList.remove("d-none");
     }
-    
+
     function saveRow(button) {
       const row = button.closest("tr");
       const id = row.getAttribute("data-id");
       const inputs = row.querySelectorAll("input");
-    
+
       const data = {
         title: inputs[0].value.trim(),
         genre: inputs[1].value.trim(),
@@ -284,7 +343,7 @@
         image: inputs[4].value.trim(),
         quantity: parseInt(inputs[5].value.trim())
       };
-    
+
       fetch(`/api/books/${id}`, {
         method: 'PUT',
         headers: {
@@ -298,9 +357,9 @@
           renderBooks();
         })
         .catch(error => console.error('Lỗi cập nhật:', error));
-        console.log(data);
+      console.log(data);
     }
-    
+
     function deleteBook(id) {
       fetch(`/api/books/${id}`, {
         method: 'DELETE',
@@ -508,6 +567,74 @@
           alert.classList.remove("d-none");
         });
     }    
+
+    function fetchOrders() {
+      fetch('/api/orders')
+        .then(res => res.json())
+        .then(orders => {
+          const tbody = document.getElementById("orderTableBody");
+          tbody.innerHTML = "";
+    
+          if (orders.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6"><em>Không có đơn hàng nào.</em></td></tr>`;
+            return;
+          }
+    
+          orders.forEach(o => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${o.id}</td>
+                <td>${o.buyer_name}</td>
+                <td>${new Date(o.date).toLocaleDateString('vi-VN')}</td>
+                <td>${o.total.toLocaleString('vi-VN')}₫</td>
+                <td>${o.status}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-info"
+                          onclick="viewOrderDetail(${o.id})">
+                    🔍
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+        })
+        .catch(err => {
+          console.error("Lỗi khi lấy đơn hàng:", err);
+        });
+    }
+    
+    function viewOrderDetail(orderId) {
+      const tbody = document.getElementById("orderDetailBody");
+      tbody.innerHTML = `<tr><td colspan="5"><em>Đang tải...</em></td></tr>`;
+    
+      fetch(`/api/orders/${orderId}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Không lấy được chi tiết đơn');
+          return res.json();
+        })
+        .then(items => {
+          if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><em>Không có sản phẩm nào.</em></td></tr>`;
+          } else {
+            tbody.innerHTML = items.map((it, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${it.book_title}</td>
+                <td>${it.quantity}</td>
+                <td>${it.unit_price.toLocaleString('vi-VN')}₫</td>
+                <td>${it.subtotal.toLocaleString('vi-VN')}₫</td>
+              </tr>
+            `).join('');
+          }
+          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        })
+        .catch(err => {
+          console.error(err);
+          tbody.innerHTML = `<tr><td colspan="5" class="text-danger"><em>Lỗi khi tải dữ liệu.</em></td></tr>`;
+          new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        });
+    }
+    
   </script>
 
 </body>

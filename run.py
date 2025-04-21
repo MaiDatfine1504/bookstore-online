@@ -2,8 +2,9 @@ from flask import render_template, abort, request, redirect, url_for, flash, jso
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import extract, func
 from sqlalchemy.orm import joinedload
+from datetime import datetime, timedelta
 from app import app, db, login
-from app.models import Book, Genre, User, UserEnum, Rule, Receipt, ReceiptDetail, Address
+from app.models import Book, Genre, User, UserEnum, Rule, Receipt, ReceiptDetail, Address, OrderStatusEnum, PaymentMethodEnum
 import hashlib
 
 @app.context_processor
@@ -32,6 +33,8 @@ def login():
                 return redirect(url_for('admin_dashboard'))
             elif user.role == UserEnum.MANAGER:
                 return redirect(url_for('manager_dashboard'))
+            elif user.role == UserEnum.EMPLOYEE:
+                return redirect(url_for('employee_dashboard'))
             else:
                 return redirect(url_for('homepage'))
         else:
@@ -339,10 +342,146 @@ def add_books():
     db.session.commit()
     return jsonify({"message": "Nhập sách thành công"}), 200
 
+# Hàm cập nhật đơn hàng quá hạn
+def update_expired_offline_orders():
+    now = datetime.now()
+    expired_time = now - Rule.cancel_time
+
+    expired_orders = Receipt.query.filter(
+        Receipt.created_date < expired_time,
+        Receipt.status == OrderStatusEnum.PENDING,
+        Receipt.payment_method == PaymentMethodEnum.OFFLINE
+    ).all()
+
+    for order in expired_orders:
+        order.status = OrderStatusEnum.CANCELED
+
+    if expired_orders:
+        db.session.commit()
+
+# Quản lý đặt hàng
+@app.route('/api/orders', methods=['GET'])
+def get_orders():
+    update_expired_offline_orders()  # Gọi trước khi trả dữ liệu
+
+    receipts = Receipt.query.all()
+
+    result = []
+    for r in receipts:
+        result.append({
+            'id': r.id,
+            'buyer_name': r.user.name if r.user else "Không xác định",
+            'date': r.created_date.strftime("%Y-%m-%d %H:%M"),
+            'total': r.total_price,
+            'status': r.status.value
+        })
+
+    return jsonify(result)
+
+@app.route('/api/orders/<int:order_id>', methods=['GET'])
+def get_order_detail(order_id):
+    # Cập nhật trạng thái quá hạn như trước
+    update_expired_offline_orders()
+    
+    # Lấy receipt
+    receipt = Receipt.query.get(order_id)
+    if not receipt:
+        return abort(404, description="Order not found")
+    
+    # Lấy chi tiết
+    details = ReceiptDetail.query.filter_by(receipt_id=order_id).all()
+    result = []
+    for d in details:
+        # giả sử Book relationship đã được thiết lập
+        book = Book.query.get(d.book_id)
+        result.append({
+            'book_title': book.title if book else 'Không xác định',
+            'quantity': d.quantity,
+            'unit_price': d.unit_price,
+            'subtotal': d.quantity * d.unit_price
+        })
+    return jsonify(result)
+
+
+#Điều hướng tới form employee
+@app.route('/employee/dashboard')
+def employee_dashboard():
+    return render_template('dashboard/employee.html')
+
+#Đếm sách khi quét mã vạch
+@app.route('/counter', methods=['GET', 'POST'])
+@login_required
+def counter():
+    if current_user.role != UserEnum.EMPLOYEE:
+        flash("Chỉ nhân viên quầy mới được truy cập trang này.", "warning")
+        return redirect(url_for('homepage'))
+
+    cart_key = f'counter_cart_{current_user.id}'
+    cart = session.get(cart_key, [])
+
+    if request.method == 'POST':
+        raw = request.form.get('barcode', '').strip()
+        try:
+            book_id = int(raw)
+            book = Book.query.get(book_id)
+        except (ValueError, TypeError):
+            book = None
+
+        if not book:
+            flash(f"Không tìm thấy sách với ID: {raw}", "danger")
+        else:
+            # Thêm sách vào giỏ tạm
+            existing = next((i for i in cart if i['id'] == book.id), None)
+            if existing:
+                existing['quantity'] += 1
+            else:
+                cart.append({
+                    'id': book.id,
+                    'title': book.title,
+                    'author': book.author,
+                    'price': book.price,
+                    'quantity': 1
+                })
+            session[cart_key] = cart
+            session.modified = True
+            flash(f"Đã thêm «{book.title}» vào giỏ.", "success")
+
+    return render_template('dashboard/employee.html', cart=cart)
+
+@app.route('/finalize_counter_order', methods=['POST'])
+@login_required
+def finalize_counter_order():
+    if current_user.role != UserEnum.EMPLOYEE:
+        return redirect(url_for('homepage'))
+
+    cart_key = f'counter_cart_{current_user.id}'
+    cart = session.get(cart_key, [])
+    if not cart:
+        flash("Giỏ hàng trống!", "warning")
+        return redirect(url_for('counter'))
+
+    total = sum(item['price'] * item['quantity'] for item in cart)
+    receipt = Receipt(user_id=current_user.id, total_price=total)
+    db.session.add(receipt)
+    db.session.flush()
+    for item in cart:
+        db.session.add(ReceiptDetail(
+            receipt_id=receipt.id,
+            book_id=item['id'],
+            quantity=item['quantity'],
+            unit_price=item['price']
+        ))
+    db.session.commit()
+
+    # Xoá giỏ tạm
+    session.pop(cart_key, None)
+    flash(f"In hoá đơn #{receipt.id} thành công!", "success")
+    return redirect(url_for('counter'))
+
 #Điều hướng tới trang chủ
 @app.route("/")
 def homepage():
-    books = Book.query.all()
+    books = Book.query.order_by(func.random()).limit(6).all()
     return render_template('homepage.html', books=books)
 
 #Điều hướng tới trang thông tin sách
@@ -388,16 +527,16 @@ def add_to_cart(book_id):
         flash("Chỉ người dùng mới có thể thêm vào giỏ hàng.", "warning")
         return redirect(url_for('homepage'))
 
+    # Lấy số lượng và sách
     quantity = request.form.get('quantity', 1, type=int)
     book = Book.query.get_or_404(book_id)
 
+    # Thêm vào session cart
     cart_key = f'cart_{current_user.id}'
     cart = session.get(cart_key, [])
-
-    book_in_cart = next((item for item in cart if item['id'] == book.id), None)
-
-    if book_in_cart:
-        book_in_cart['quantity'] += quantity
+    existing = next((i for i in cart if i['id'] == book.id), None)
+    if existing:
+        existing['quantity'] += quantity
     else:
         cart.append({
             'id': book.id,
@@ -407,13 +546,38 @@ def add_to_cart(book_id):
             'quantity': quantity,
             'image': book.image
         })
-
     session[cart_key] = cart
     session.modified = True
     flash('Sách đã được thêm vào giỏ hàng!', 'success')
-    return redirect(url_for('book_detail', book_id=book.id))
 
-# Xem giỏ hàng
+    # Chuyển về trang mong muốn
+    next_url = request.form.get('next') or request.referrer or url_for('homepage')
+    return redirect(next_url)
+
+#Xoá sách khỏi giỏ hàng
+@app.route('/remove-from-cart/<int:book_id>', methods=['POST'])
+@login_required
+def remove_from_cart(book_id):
+    cart_key = f'cart_{current_user.id}'
+    cart = session.get(cart_key, [])
+
+    # Lọc bỏ hết các mục có id == book_id
+    new_cart = [item for item in cart if item['id'] != book_id]
+
+    if new_cart:
+        # Nếu vẫn còn sách khác, lưu lại giỏ mới
+        session[cart_key] = new_cart
+    else:
+        # Nếu giỏ trống, xoá hẳn key khỏi session
+        session.pop(cart_key, None)
+
+    # Đánh dấu session đã thay đổi
+    session.modified = True
+
+    flash('Đã xóa sách khỏi giỏ hàng.', 'success')
+    return redirect(url_for('checkout', tab='cart'))
+
+# Route: Xem giỏ hàng
 @app.route('/cart')
 @login_required
 def view_cart():
@@ -425,34 +589,44 @@ def view_cart():
     cart = session.get(cart_key, [])
     return redirect(url_for('checkout', tab='cart'))
 
-
-# Trang thanh toán
+# Route: Hiển thị và xử lý thanh toán
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
     tab = request.args.get('tab', 'cart')
     cart_key = f'cart_{current_user.id}'
-    cart = session.get(cart_key, [])
+    selected_key = f'selected_cart_{current_user.id}'
+    cart = session.get(selected_key) or session.get(cart_key, [])
 
-    # Nếu POST: xử lý lựa chọn phương thức thanh toán
     if request.method == 'POST':
         payment_method = request.form.get('payment_method')
         session['payment_method'] = payment_method
 
-        # Nếu chọn online => chuyển tab nhập địa chỉ
+        # Chuyển đến tab địa chỉ nếu chọn thanh toán online
         if payment_method == 'online':
             return redirect(url_for('checkout', tab='address'))
         else:
-            # Nếu offline => chuyển sang finalize_order để tạo hóa đơn luôn
+            # Nếu thanh toán khi nhận hàng, chuyển đến trang xác nhận đơn hàng
             return redirect(url_for('finalize_order'))
 
-    # Nếu là GET: hiển thị trang theo tab đang chọn
+    # Lấy thông tin hóa đơn nếu có
     receipt = None
     receipt_id = request.args.get('receipt_id')
     if tab == 'result' and receipt_id:
         receipt = Receipt.query.get(receipt_id)
 
-    address = current_user.address if tab in ['address', 'result'] else None
+    # Lấy thông tin địa chỉ của người dùng
+    address = None
+    if current_user.address and tab in ['address', 'result']:
+        address = {
+            'house_number': current_user.address.house_number,
+            'street': current_user.address.street,
+            'ward': current_user.address.ward,
+            'district': current_user.address.district,
+            'city': current_user.address.city,
+            'country': current_user.address.country
+        }
+
     payment_method = session.get('payment_method') or request.args.get('method')
 
     return render_template('cart.html',
@@ -462,8 +636,28 @@ def checkout():
                            receipt=receipt,
                            payment_method=payment_method)
 
+# Route: Chọn sách để thanh toán
+@app.route('/checkout-selected', methods=['POST'])
+@login_required
+def checkout_selected():
+    cart_key = f'cart_{current_user.id}'
+    full_cart = session.get(cart_key, [])
 
-# Lưu địa chỉ giao hàng
+    selected_ids = request.form.getlist('selected_books')
+    if not selected_ids:
+        flash('Bạn chưa chọn sách nào để thanh toán.', 'warning')
+        return redirect(url_for('checkout', tab='cart'))
+
+    # Chỉ lấy sách đã chọn từ giỏ hàng
+    selected_cart = [item for item in full_cart if str(item['id']) in selected_ids]
+    if not selected_cart:
+        flash('Không tìm thấy sách đã chọn trong giỏ hàng.', 'danger')
+        return redirect(url_for('checkout', tab='cart'))
+
+    session[f'selected_cart_{current_user.id}'] = selected_cart
+    return redirect(url_for('checkout', tab='method'))
+
+# Route: Lưu địa chỉ giao hàng
 @app.route('/submit-address', methods=['POST'])
 @login_required
 def submit_address():
@@ -497,13 +691,14 @@ def submit_address():
     flash('Địa chỉ đã được lưu thành công!', 'success')
     return redirect(url_for('finalize_order'))
 
-
-# Tạo hóa đơn
+# Route: Tạo hóa đơn thanh toán
 @app.route('/finalize_order', methods=['GET', 'POST'])
 @login_required
 def finalize_order():
     cart_key = f'cart_{current_user.id}'
-    cart = session.get(cart_key, [])
+    selected_key = f'selected_cart_{current_user.id}'
+    cart = session.get(selected_key) or session.get(cart_key, [])
+
     if not cart:
         flash('Giỏ hàng trống!', 'warning')
         return redirect(url_for('checkout', tab='cart'))
@@ -511,7 +706,19 @@ def finalize_order():
     payment_method = session.get('payment_method', 'offline')
     total = sum(item['price'] * item['quantity'] for item in cart)
 
-    receipt = Receipt(user_id=current_user.id, total_price=total)
+    # Xác định trạng thái đơn
+    if payment_method == 'online':
+        status = OrderStatusEnum.COMPLETED
+    else:
+        status = OrderStatusEnum.PENDING
+
+    # Tạo hóa đơn
+    receipt = Receipt(
+        user_id=current_user.id,
+        total_price=total,
+        payment_method=PaymentMethodEnum(payment_method),
+        status=status,
+    )
     db.session.add(receipt)
     db.session.flush()
 
@@ -524,7 +731,13 @@ def finalize_order():
         ))
 
     db.session.commit()
-    session.pop(cart_key, None)
+
+    # Giữ lại các sách chưa thanh toán trong giỏ
+    full_cart = session.get(cart_key, [])
+    remaining_cart = [item for item in full_cart if item not in cart]
+    session[cart_key] = remaining_cart
+
+    session.pop(selected_key, None)
     session.pop('payment_method', None)
 
     return redirect(url_for('checkout', tab='result', receipt_id=receipt.id, method=payment_method))

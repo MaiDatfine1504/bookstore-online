@@ -1,15 +1,23 @@
 import json, os, hashlib
 from datetime import datetime
-from app import app, db
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, Enum, DateTime
+from __init__ import app, db
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime, Enum
 from sqlalchemy.orm import relationship
 from enum import Enum as RoleEnum
 from flask_login import UserMixin
-
 class UserEnum(RoleEnum):
     USER = 1
     ADMIN = 2
     MANAGER = 3
+    EMPLOYEE = 4
+class PaymentMethodEnum(RoleEnum):
+    ONLINE = 'online'
+    OFFLINE = 'offline'
+
+class OrderStatusEnum(RoleEnum):
+    PENDING = 'pending'
+    COMPLETED = 'completed'
+    CANCELED = 'canceled'
 class Base(db.Model):
     __abstract__ = True
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -18,26 +26,21 @@ class Base(db.Model):
 
     def __str__(self):
         return self.name
-
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    min_import = db.Column(db.Integer, nullable=False, default=150)
-    min_stock = db.Column(db.Integer, nullable=False, default=300)
-    cancel_time = db.Column(db.Integer, nullable=False, default=48)
-
+    min_import = Column(Integer, nullable=False, default=150)
+    min_stock = Column(Integer, nullable=False, default=300)
+    cancel_time = Column(Integer, nullable=False, default=48)
 class User(Base, UserMixin):
-    __tablename__ = 'users'
     name = Column(String(100))
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(50), nullable=False)
     role = Column(Enum(UserEnum), default=UserEnum.USER)
     receipts = relationship('Receipt', backref="user", lazy=True)
     address = relationship('Address', backref='user', uselist=False, cascade="all, delete-orphan")
-
 class Genre(Base):
     name = Column(String(50), nullable=False, unique=True)
     books = relationship('Book', backref="genre", lazy=True)
-
 class Book(Base):
     title = Column(String(100), nullable=False)
     image = Column(String(300), default="...")
@@ -46,12 +49,12 @@ class Book(Base):
     price = Column(Float, default=0)
     quantity = Column(Integer, default=0)
     details = relationship('ReceiptDetail', backref='book', lazy=True)
-
 class Receipt(Base):
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     total_price = Column(Float, nullable=False)
+    payment_method = Column(Enum(PaymentMethodEnum), default=PaymentMethodEnum.OFFLINE)
+    status = Column(Enum(OrderStatusEnum), default=OrderStatusEnum.PENDING)
     details = relationship('ReceiptDetail', backref='receipt', lazy=True)
-
 class ReceiptDetail(Base):
     quantity = Column(Integer, default=0)
     unit_price = Column(Float, default=0)
@@ -65,7 +68,7 @@ class Address(Base):
     district = Column(String(100))          
     city = Column(String(100))              
     country = Column(String(100))           
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), unique=True, nullable=False)
 
 # -------------------------
 # Khởi tạo cơ sở dữ liệu và dữ liệu mẫu
@@ -132,5 +135,11 @@ if __name__ == "__main__":
             role=UserEnum.MANAGER
         )
 
-        db.session.add_all([u1, u2, u3, u4])
+        u5 = User(
+            name="Nhân viên", username="employee",
+            password=hashlib.md5("employee123".encode()).hexdigest(),
+            role=UserEnum.EMPLOYEE
+        )
+
+        db.session.add_all([u1, u2, u3, u4, u5])
         db.session.commit()
