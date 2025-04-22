@@ -9,6 +9,7 @@
   .navbar {
     display: none;
   }
+
   .footer {
     display: none;
   }
@@ -20,7 +21,7 @@
   <h2 class="text-center mb-4">Quầy thanh toán (Employee)</h2>
 
   <!-- Form nhận mã vạch -->
-  <form method="POST" class="text-center mb-4">
+  <form method="POST" action="{{ url_for('counter') }}" class="text-center mb-4">
     <input type="text"
            name="barcode"
            id="barcode-input"
@@ -31,10 +32,14 @@
   </form>
 
   <!-- Hiển thị tạm giỏ hàng -->
+  {% if cart %}
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Sách</th><th>Số lượng</th><th>Giá</th><th>Thành tiền</th>
+        <th>Sách</th>
+        <th>Số lượng</th>
+        <th>Giá</th>
+        <th>Thành tiền</th>
       </tr>
     </thead>
     <tbody>
@@ -51,13 +56,18 @@
 
   <!-- Nút hoàn tất đơn tại quầy -->
   <form method="POST" action="{{ url_for('finalize_counter_order') }}">
-    <button type="submit" class="btn btn-success">Hoàn tất & In hoá đơn</button>
+    <div class="text-center">
+      <button type="submit" class="btn btn-success">Hoàn tất & In hoá đơn</button>
+    </div>
   </form>
+  {% else %}
+  <p class="text-center text-muted">Chưa có sản phẩm nào trong giỏ.</p>
+  {% endif %}
 </div>
 
 <script>
   // Sau mỗi submit, focus lại vào input quét để dùng liên tục
-  document.getElementById('barcode-input')
-          .addEventListener('blur', e => e.target.focus());
+  const barcodeInput = document.getElementById('barcode-input');
+  barcodeInput.addEventListener('blur', e => e.target.focus());
 </script>
 {% endblock %}

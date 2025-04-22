@@ -3,8 +3,8 @@ from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import extract, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
-from app import app, db, login
-from app.models import Book, Genre, User, UserEnum, Rule, Receipt, ReceiptDetail, Address, OrderStatusEnum, PaymentMethodEnum
+from __init__ import app, db, login
+from models import Book, Genre, User, UserEnum, Rule, Receipt, ReceiptDetail, Address, OrderStatusEnum, PaymentMethodEnum
 import hashlib
 
 @app.context_processor
@@ -39,7 +39,7 @@ def login():
                 return redirect(url_for('homepage'))
         else:
             flash("Sai thông tin đăng nhập!", "danger")
-    return render_template("login.html")
+    return render_template("account/login.html")
 
 #Điều hướng tới form đăng ký tài khoản
 @app.route("/register", methods=["GET", "POST"])
@@ -58,7 +58,7 @@ def register():
             flash("Đăng ký thành công, bạn có thể đăng nhập!", "success")
             return redirect(url_for("login"))
 
-    return render_template("register.html")
+    return render_template("account/register.html")
 
 #Đăng xuất
 @app.route("/logout")
@@ -482,7 +482,7 @@ def finalize_counter_order():
 @app.route("/")
 def homepage():
     books = Book.query.order_by(func.random()).limit(6).all()
-    return render_template('homepage.html', books=books)
+    return render_template('user/homepage.html', books=books)
 
 #Điều hướng tới trang thông tin sách
 @app.route('/book/<int:book_id>')
@@ -490,7 +490,7 @@ def book_detail(book_id):
     book = Book.query.get(book_id)
     if book is None:
         abort(404)
-    return render_template('book_detail.html', book=book)
+    return render_template('user/book_detail.html', book=book)
 
 #Hiển thị toàn bộ sách cùng thể loại
 @app.route('/genre/<int:genre_id>')
@@ -501,7 +501,7 @@ def books_by_genre(genre_id):
     if not genre:
         abort(404)
 
-    return render_template('homepage.html', books=books, genre=genre)
+    return render_template('user/homepage.html', books=books, genre=genre)
 
 #Hiển thị sách/thể loại đang tìm kiếm
 @app.route('/search')
@@ -517,7 +517,7 @@ def search():
 
     books = books.all()
 
-    return render_template('homepage.html', books=books)
+    return render_template('user/homepage.html', books=books)
 
 #Thêm sách vào giỏ hàng
 @app.route('/add-to-cart/<int:book_id>', methods=['POST'])
@@ -525,7 +525,7 @@ def search():
 def add_to_cart(book_id):
     if current_user.role != UserEnum.USER:
         flash("Chỉ người dùng mới có thể thêm vào giỏ hàng.", "warning")
-        return redirect(url_for('homepage'))
+        return redirect(url_for('user/homepage'))
 
     # Lấy số lượng và sách
     quantity = request.form.get('quantity', 1, type=int)
@@ -550,9 +550,7 @@ def add_to_cart(book_id):
     session.modified = True
     flash('Sách đã được thêm vào giỏ hàng!', 'success')
 
-    # Chuyển về trang mong muốn
-    next_url = request.form.get('next') or request.referrer or url_for('homepage')
-    return redirect(next_url)
+    return redirect(url_for('book_detail', book_id=book.id))
 
 #Xoá sách khỏi giỏ hàng
 @app.route('/remove-from-cart/<int:book_id>', methods=['POST'])
@@ -577,19 +575,19 @@ def remove_from_cart(book_id):
     flash('Đã xóa sách khỏi giỏ hàng.', 'success')
     return redirect(url_for('checkout', tab='cart'))
 
-# Route: Xem giỏ hàng
+#Xem giỏ hàng
 @app.route('/cart')
 @login_required
 def view_cart():
     if current_user.role != UserEnum.USER:
         flash("Chỉ người dùng mới được xem giỏ hàng.", "warning")
-        return redirect(url_for('homepage'))
+        return redirect(url_for('user/homepage'))
 
     cart_key = f'cart_{current_user.id}'
     cart = session.get(cart_key, [])
     return redirect(url_for('checkout', tab='cart'))
 
-# Route: Hiển thị và xử lý thanh toán
+#Hiển thị và xử lý thanh toán
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
@@ -629,14 +627,14 @@ def checkout():
 
     payment_method = session.get('payment_method') or request.args.get('method')
 
-    return render_template('cart.html',
+    return render_template('user/cart.html',
                            cart=cart,
                            address=address,
                            tab=tab,
                            receipt=receipt,
                            payment_method=payment_method)
 
-# Route: Chọn sách để thanh toán
+#Chọn sách để thanh toán
 @app.route('/checkout-selected', methods=['POST'])
 @login_required
 def checkout_selected():
@@ -657,7 +655,7 @@ def checkout_selected():
     session[f'selected_cart_{current_user.id}'] = selected_cart
     return redirect(url_for('checkout', tab='method'))
 
-# Route: Lưu địa chỉ giao hàng
+#Lưu địa chỉ giao hàng
 @app.route('/submit-address', methods=['POST'])
 @login_required
 def submit_address():
@@ -691,7 +689,7 @@ def submit_address():
     flash('Địa chỉ đã được lưu thành công!', 'success')
     return redirect(url_for('finalize_order'))
 
-# Route: Tạo hóa đơn thanh toán
+#Tạo hóa đơn thanh toán
 @app.route('/finalize_order', methods=['GET', 'POST'])
 @login_required
 def finalize_order():
