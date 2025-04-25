@@ -1,6 +1,6 @@
 import json, os, hashlib
 from datetime import datetime
-from __init__ import app, db
+from app import app, db
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime, Enum
 from sqlalchemy.orm import relationship
 from enum import Enum as RoleEnum
@@ -26,8 +26,7 @@ class Base(db.Model):
 
     def __str__(self):
         return self.name
-class Rule(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+class Rule(Base):
     min_import = Column(Integer, nullable=False, default=150)
     min_stock = Column(Integer, nullable=False, default=300)
     cancel_time = Column(Integer, nullable=False, default=48)
@@ -78,8 +77,8 @@ if __name__ == "__main__":
         db.create_all()
         
         basedir = os.path.dirname(os.path.abspath(__file__))
-        file_path_genres = os.path.join(basedir, "data", "genres.json")
-        file_path_books = os.path.join(basedir, "data", "books.json")
+        file_path_genres = os.path.join(basedir, "app/data", "genres.json")
+        file_path_books = os.path.join(basedir, "app/data", "books.json")
 
         # Thêm thể loại
         with open(file_path_genres, encoding='utf-8') as f:
@@ -140,6 +139,8 @@ if __name__ == "__main__":
             password=hashlib.md5("employee123".encode()).hexdigest(),
             role=UserEnum.EMPLOYEE
         )
-
         db.session.add_all([u1, u2, u3, u4, u5])
+
+        rule = Rule(min_import=150, min_stock=300, cancel_time=48)
+        db.session.add(rule)
         db.session.commit()

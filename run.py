@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import extract, func
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
-from __init__ import app, db, login
+from app import app, db, login
 from models import Book, Genre, User, UserEnum, Rule, Receipt, ReceiptDetail, Address, OrderStatusEnum, PaymentMethodEnum
 import hashlib
 
@@ -461,7 +461,7 @@ def finalize_counter_order():
         return redirect(url_for('counter'))
 
     total = sum(item['price'] * item['quantity'] for item in cart)
-    receipt = Receipt(user_id=current_user.id, total_price=total)
+    receipt = Receipt(user_id=current_user.id, total_price=total, status=OrderStatusEnum.COMPLETED)
     db.session.add(receipt)
     db.session.flush()
     for item in cart:
@@ -469,7 +469,7 @@ def finalize_counter_order():
             receipt_id=receipt.id,
             book_id=item['id'],
             quantity=item['quantity'],
-            unit_price=item['price']
+            unit_price=item['price'],
         ))
     db.session.commit()
 
@@ -525,7 +525,7 @@ def search():
 def add_to_cart(book_id):
     if current_user.role != UserEnum.USER:
         flash("Chỉ người dùng mới có thể thêm vào giỏ hàng.", "warning")
-        return redirect(url_for('user/homepage'))
+        return redirect(url_for('homepage'))
 
     # Lấy số lượng và sách
     quantity = request.form.get('quantity', 1, type=int)
@@ -581,7 +581,7 @@ def remove_from_cart(book_id):
 def view_cart():
     if current_user.role != UserEnum.USER:
         flash("Chỉ người dùng mới được xem giỏ hàng.", "warning")
-        return redirect(url_for('user/homepage'))
+        return redirect(url_for('homepage'))
 
     cart_key = f'cart_{current_user.id}'
     cart = session.get(cart_key, [])

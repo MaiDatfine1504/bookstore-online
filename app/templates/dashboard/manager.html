@@ -162,6 +162,7 @@
 <body class="p-4">
 
   <div class="container">
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger" style="float: right;">Đăng xuất</a>
     <h2 class="text-center mb-4">QUẢN LÝ SÁCH</h2>
 
     <!-- Tabs -->
@@ -279,10 +280,10 @@
       document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
       document.getElementById(tabId).classList.remove("hidden");
       event.target.classList.add("active");
-    
+
       if (tabId === "quanLyKho") renderBooks();
       if (tabId === "quanLyDonHang") fetchOrders(); // gọi hàm mới
-    }    
+    }
 
     function renderBooks() {
       fetch('/api/books')
@@ -566,7 +567,7 @@
           alert.innerText = "Không thể lấy quy định hệ thống.";
           alert.classList.remove("d-none");
         });
-    }    
+    }
 
     function fetchOrders() {
       fetch('/api/orders')
@@ -574,12 +575,12 @@
         .then(orders => {
           const tbody = document.getElementById("orderTableBody");
           tbody.innerHTML = "";
-    
+
           if (orders.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6"><em>Không có đơn hàng nào.</em></td></tr>`;
             return;
           }
-    
+
           orders.forEach(o => {
             tbody.innerHTML += `
               <tr>
@@ -602,11 +603,11 @@
           console.error("Lỗi khi lấy đơn hàng:", err);
         });
     }
-    
+
     function viewOrderDetail(orderId) {
       const tbody = document.getElementById("orderDetailBody");
       tbody.innerHTML = `<tr><td colspan="5"><em>Đang tải...</em></td></tr>`;
-    
+
       fetch(`/api/orders/${orderId}`)
         .then(res => {
           if (!res.ok) throw new Error('Không lấy được chi tiết đơn');
@@ -634,7 +635,7 @@
           new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
         });
     }
-    
+
   </script>
 
 </body>
